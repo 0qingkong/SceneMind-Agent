@@ -17,6 +17,8 @@ class AnalyzeResponse(BaseModel):
     trace_id: str
     engine: str
     filename: str
+    image_width: int = Field(gt=0)
+    image_height: int = Field(gt=0)
     scene_summary: str
     objects: list[DetectedObject]
-    latency_ms: float
+    latency_ms: float = Field(ge=0)

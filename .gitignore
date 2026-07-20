@@ -26,3 +26,9 @@ backend/uploads/*
 
 # Logs
 *.log
+
+# TypeScript build artifacts
+*.tsbuildinfo
+frontend/src/**/*.js
+frontend/vite.config.js
+frontend/vite.config.d.ts

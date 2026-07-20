@@ -10,6 +10,8 @@ export interface AnalyzeResponse {
   trace_id: string
   engine: string
   filename: string
+  image_width: number
+  image_height: number
   scene_summary: string
   objects: DetectedObject[]
   latency_ms: number
