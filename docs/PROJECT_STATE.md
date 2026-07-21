@@ -28,15 +28,26 @@ Competition submission deadline: 2026-08-08.
 - Backend tests
 - Frontend production build check
 
+### Day 3 — Real YOLO object detector
+
+- Ultralytics `yolo26n.pt` real object detection
+- Lazy, reusable model loading with automatic CPU/CUDA device selection
+- Configurable model, confidence, image size, maximum detections, and device
+- Normalized and clamped evidence bounding boxes
+- Chinese labels for common indoor COCO classes
+- Truthful count-based scene summaries and explicit failure behavior
+- Analyzer factory with retained Mock mode
+- Health reporting for mode, model, load state, and initialized device
+- Unit, route, production-build, and real indoor-image inference verification
+
 ## Current milestone
 
-### Day 3 — Real object detector
+### Day 4 — Spatial-relation engine
 
-Replace `MockSceneAnalyzer` with a real Ultralytics YOLO detector while preserving the frontend API contract.
+Derive simple spatial relations from detected-object bounding boxes while preserving evidence traceability.
 
 ## Next milestones
 
-- Day 4: spatial-relation engine
 - Day 5: scene persistence
 - Day 6: object history and last-seen query
 - Day 7: agent tool orchestration

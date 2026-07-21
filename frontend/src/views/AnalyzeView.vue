@@ -59,7 +59,7 @@ onBeforeUnmount(clearPreview)
   <section>
     <div class="page-heading">
       <div><p class="eyebrow">SCENE ANALYSIS</p><h1>场景分析工作台</h1></div>
-      <span>Day 2</span>
+      <span>Day 3</span>
     </div>
 
     <div class="workspace-grid">

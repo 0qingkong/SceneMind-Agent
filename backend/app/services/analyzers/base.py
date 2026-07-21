@@ -10,8 +10,21 @@ class AnalysisResult:
     objects: list[DetectedObject]
 
 
+class AnalyzerError(RuntimeError):
+    """Raised when a configured analyzer cannot complete real inference."""
+
+
 class SceneAnalyzer(Protocol):
     engine: str
+    model_name: str | None
+
+    @property
+    def is_loaded(self) -> bool:
+        ...
+
+    @property
+    def device(self) -> str | None:
+        ...
 
     def analyze(
         self,
