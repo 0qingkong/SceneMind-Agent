@@ -24,6 +24,11 @@ frontend/.vite/
 backend/uploads/*
 !backend/uploads/.gitkeep
 
+# Model weights and generated inference output
+*.pt
+backend/models/
+runs/
+
 # Logs
 *.log
 

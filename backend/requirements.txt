@@ -2,3 +2,4 @@ fastapi[standard]==0.139.2
 pytest==8.4.2
 httpx==0.28.1
 Pillow>=10.4.0,<13.0.0
+ultralytics==8.4.102

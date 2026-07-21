@@ -2,19 +2,21 @@ from __future__ import annotations
 
 from io import BytesIO
 from time import perf_counter
+from typing import Annotated
 from uuid import uuid4
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
+from starlette.concurrency import run_in_threadpool
 
+from app.dependencies import get_analyzer
 from app.schemas.analyze import AnalyzeResponse
-from app.services.analyzers import MockSceneAnalyzer
+from app.services.analyzers import AnalyzerError, SceneAnalyzer
 
 router = APIRouter(prefix="/analyze", tags=["analysis"])
 
 ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_FILE_SIZE = 10 * 1024 * 1024
-analyzer = MockSceneAnalyzer()
 
 
 def read_image_size(content: bytes) -> tuple[int, int]:
@@ -36,7 +38,10 @@ def read_image_size(content: bytes) -> tuple[int, int]:
 
 
 @router.post("", response_model=AnalyzeResponse)
-async def analyze_scene(image: UploadFile = File(...)) -> AnalyzeResponse:
+async def analyze_scene(
+    analyzer: Annotated[SceneAnalyzer, Depends(get_analyzer)],
+    image: UploadFile = File(...),
+) -> AnalyzeResponse:
     started_at = perf_counter()
 
     if image.content_type not in ALLOWED_CONTENT_TYPES:
@@ -51,12 +56,16 @@ async def analyze_scene(image: UploadFile = File(...)) -> AnalyzeResponse:
     image_width, image_height = read_image_size(content)
     filename = image.filename or "unnamed-image"
 
-    analysis = analyzer.analyze(
-        image_bytes=content,
-        filename=filename,
-        image_width=image_width,
-        image_height=image_height,
-    )
+    try:
+        analysis = await run_in_threadpool(
+            analyzer.analyze,
+            image_bytes=content,
+            filename=filename,
+            image_width=image_width,
+            image_height=image_height,
+        )
+    except AnalyzerError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     return AnalyzeResponse(
         trace_id=str(uuid4()),

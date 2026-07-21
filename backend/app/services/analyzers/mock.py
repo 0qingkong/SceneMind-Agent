@@ -4,6 +4,15 @@ from app.services.analyzers.base import AnalysisResult
 
 class MockSceneAnalyzer:
     engine = "mock-v0.2"
+    model_name = None
+
+    @property
+    def is_loaded(self) -> bool:
+        return False
+
+    @property
+    def device(self) -> None:
+        return None
 
     def analyze(
         self,
@@ -31,15 +40,12 @@ class MockSceneAnalyzer:
             DetectedObject(
                 id="object-3",
                 label="cup",
-                display_name="水杯",
+                display_name="杯子",
                 confidence=0.87,
                 bbox=[0.72, 0.36, 0.86, 0.68],
             ),
         ]
         return AnalysisResult(
-            scene_summary=(
-                "当前为 Day 2 Mock 分析：系统已读取真实图片尺寸，"
-                "并使用统一数据结构返回物体与归一化边界框。"
-            ),
+            scene_summary="当前为 Mock 分析：返回 3 个固定示例物体，不代表真实检测结果。",
             objects=objects,
         )
