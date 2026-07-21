@@ -35,3 +35,13 @@ Status: accepted
 Decision: when real inference is enabled and unavailable, return an observable error rather than pretending Mock output is real.
 
 Reason: silent fallback undermines evaluation credibility and makes bugs difficult to diagnose.
+
+## ADR-006 — Deterministic 2D spatial heuristics
+
+Status: accepted
+
+Decision: Day 4 spatial relations are derived from normalized two-dimensional bounding-box geometry with deterministic thresholds and scores. The reasoner is shared by Mock and real analyzers and remains separate from object detection.
+
+Reason: geometric rules are fast, reproducible, explainable, and require no additional heavyweight model. Their evidence can be inspected directly through center distance, IoU, or containment ratio.
+
+Limit: image-plane geometry does not establish physical support, depth ordering, or metric distance. Relations such as `on`, `under`, `in_front_of`, and `behind` are excluded. Semantic or three-dimensional relations may be added later through a VLM or depth estimation while preserving the current evidence-backed contract.

@@ -9,9 +9,10 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
 from starlette.concurrency import run_in_threadpool
 
-from app.dependencies import get_analyzer
+from app.dependencies import get_analyzer, get_spatial_reasoner
 from app.schemas.analyze import AnalyzeResponse
 from app.services.analyzers import AnalyzerError, SceneAnalyzer
+from app.services.spatial import SpatialReasoner
 
 router = APIRouter(prefix="/analyze", tags=["analysis"])
 
@@ -40,6 +41,7 @@ def read_image_size(content: bytes) -> tuple[int, int]:
 @router.post("", response_model=AnalyzeResponse)
 async def analyze_scene(
     analyzer: Annotated[SceneAnalyzer, Depends(get_analyzer)],
+    spatial_reasoner: Annotated[SpatialReasoner, Depends(get_spatial_reasoner)],
     image: UploadFile = File(...),
 ) -> AnalyzeResponse:
     started_at = perf_counter()
@@ -67,6 +69,8 @@ async def analyze_scene(
     except AnalyzerError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
+    relations = spatial_reasoner.reason(analysis.objects)
+
     return AnalyzeResponse(
         trace_id=str(uuid4()),
         engine=analyzer.engine,
@@ -75,5 +79,6 @@ async def analyze_scene(
         image_height=image_height,
         scene_summary=analysis.scene_summary,
         objects=analysis.objects,
+        relations=relations,
         latency_ms=round((perf_counter() - started_at) * 1000, 2),
     )

@@ -5,6 +5,7 @@ import axios from 'axios'
 import { analyzeScene } from '../api/client'
 import ImageStage from '../components/ImageStage.vue'
 import ObjectList from '../components/ObjectList.vue'
+import RelationList from '../components/RelationList.vue'
 import type { AnalyzeResponse } from '../types/api'
 
 const selectedFile = ref<File | null>(null)
@@ -59,7 +60,7 @@ onBeforeUnmount(clearPreview)
   <section>
     <div class="page-heading">
       <div><p class="eyebrow">SCENE ANALYSIS</p><h1>场景分析工作台</h1></div>
-      <span>Day 3</span>
+      <span>Day 4</span>
     </div>
 
     <div class="workspace-grid">
@@ -95,6 +96,7 @@ onBeforeUnmount(clearPreview)
             <div><strong>{{ result.latency_ms }}ms</strong><small>Latency</small></div>
           </div>
           <ObjectList :objects="result.objects" />
+          <RelationList :objects="result.objects" :relations="result.relations" />
           <p class="trace">Engine: {{ result.engine }}<br />{{ result.trace_id }}</p>
         </template>
 

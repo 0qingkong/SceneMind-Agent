@@ -101,6 +101,26 @@ h1, h2, p { margin-top: 0; }
 .object-card { display: flex; justify-content: space-between; align-items: center; }
 .object-card div { display: flex; flex-direction: column; }
 .object-card > span { color: #70ffd0; font-weight: 800; }
+.relation-section { margin-top: 18px; }
+.relation-heading { display: flex; align-items: center; justify-content: space-between; }
+.relation-heading h3 { margin: 0; font-size: 15px; }
+.relation-heading > span {
+  min-width: 24px; padding: 4px 7px; border-radius: 999px; color: #70ffd0;
+  background: rgba(112,255,208,.07); text-align: center; font-size: 10px; font-weight: 800;
+}
+.relation-explanation { margin: 8px 0 10px; color: #698078; font-size: 11px; line-height: 1.6; }
+.relation-list { display: grid; gap: 8px; }
+.relation-card {
+  display: flex; padding: 12px 13px; align-items: center; justify-content: space-between; gap: 12px;
+  border: 1px solid rgba(220,250,242,.065); border-radius: 13px; background: rgba(255,255,255,.018);
+}
+.relation-statement { display: flex; min-width: 0; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12px; }
+.relation-statement span { color: #70ffd0; }
+.relation-card small { flex: 0 0 auto; color: #789089; font-size: 10px; }
+.relation-empty {
+  margin: 0; padding: 18px 12px; border: 1px dashed rgba(220,250,242,.08);
+  border-radius: 13px; color: #60776f; text-align: center; font-size: 12px;
+}
 .trace { overflow-wrap: anywhere; color: #536a63; font-size: 10px; }
 .empty-result { display: flex; min-height: 470px; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
 .empty-result p { color: #60776f; }
@@ -130,6 +150,7 @@ h1, h2, p { margin-top: 0; }
   .workspace-panel { padding: 17px; }
   .upload-dropzone, .image-stage { min-height: 300px; }
   .metrics-row { grid-template-columns: 1fr; }
+  .relation-card { align-items: flex-start; flex-direction: column; gap: 7px; }
   .bottom-nav { right: 12px; left: 12px; bottom: 12px; justify-content: space-between; transform: none; }
   .bottom-nav a { min-width: 0; flex: 1; }
 }
