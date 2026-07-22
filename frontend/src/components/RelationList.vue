@@ -6,6 +6,8 @@ import type {
   DetectedRelation,
   RelationPredicate,
 } from '../types/api'
+import { buildObjectDisplayNameMap, objectDisplayName } from '../utils/objectDisplayNames'
+import { collapseReciprocalRelations } from '../utils/relationDisplay'
 
 const props = defineProps<{
   objects: DetectedObject[]
@@ -23,12 +25,11 @@ const predicateLabels: Record<RelationPredicate, string> = {
   contains: '包含',
 }
 
-const objectNames = computed(
-  () => new Map(props.objects.map((item) => [item.id, item.display_name])),
-)
+const objectNames = computed(() => buildObjectDisplayNameMap(props.objects))
+const visibleRelations = computed(() => collapseReciprocalRelations(props.relations))
 
 function resolveName(objectId: string) {
-  return objectNames.value.get(objectId) ?? `未知物体（${objectId}）`
+  return objectDisplayName(objectNames.value, objectId)
 }
 </script>
 
@@ -36,14 +37,14 @@ function resolveName(objectId: string) {
   <section class="relation-section">
     <div class="relation-heading">
       <h3>二维空间关系</h3>
-      <span>{{ relations.length }}</span>
+      <span>{{ visibleRelations.length }}</span>
     </div>
     <p class="relation-explanation">
       空间关系由二维边界框几何规则推导，不代表真实深度或物理距离。
     </p>
 
-    <div v-if="relations.length" class="relation-list">
-      <article v-for="relation in relations" :key="relation.id" class="relation-card">
+    <div v-if="visibleRelations.length" class="relation-list">
+      <article v-for="relation in visibleRelations" :key="relation.id" class="relation-card">
         <div class="relation-statement">
           <strong>{{ resolveName(relation.subject_id) }}</strong>
           <span>{{ predicateLabels[relation.predicate] }}</span>
