@@ -15,6 +15,7 @@ defineProps<{
     <div>
       <p v-if="prominent" class="eyebrow">LAST SEEN</p>
       <h3>{{ match.observation.title || '未命名场景' }}</h3>
+      <span v-if="match.observation.is_demo" class="demo-inline">演示数据</span>
       <small>{{ new Date(match.observation.created_at).toLocaleString('zh-CN') }}</small>
       <span v-if="match.observation.location" class="observation-location">{{ match.observation.location }}</span>
       <div class="matched-names">

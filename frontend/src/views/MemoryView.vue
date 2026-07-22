@@ -73,13 +73,14 @@ onMounted(() => loadObservations(true))
   <section>
     <div class="page-heading">
       <div><p class="eyebrow">SPATIAL MEMORY</p><h1>空间记忆</h1></div>
-      <span>{{ activeQuery ? historyTotal : observationTotal }} Memories</span>
+      <span>{{ activeQuery ? historyTotal : observationTotal }} 条记忆</span>
     </div>
 
     <form class="memory-search" @submit.prevent="searchMemory(true)">
       <input v-model="searchInput" placeholder="搜索杯子、电脑、背包……" />
       <button class="primary-button" :disabled="loading">搜索记忆</button>
     </form>
+    <p class="search-guidance">按检测类别搜索，例如：杯子、人物、电脑、椅子；这不是跨图片身份识别。</p>
 
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     <template v-if="activeQuery">

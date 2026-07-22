@@ -33,6 +33,7 @@ def observation_summary(model: Observation) -> ObservationSummary:
         object_count=model.object_count,
         relation_count=model.relation_count,
         labels=labels,
+        is_demo=model.engine == "demo-seed",
     )
 
 
@@ -212,6 +213,7 @@ class ObservationRepository:
         terms: Sequence[str],
         limit: int,
         offset: int,
+        location: str | None = None,
     ) -> tuple[list[Observation], int]:
         object_conditions = []
         for term in terms:
@@ -225,6 +227,12 @@ class ObservationRepository:
         statement = select(Observation).where(
             Observation.objects.any(or_(*object_conditions))
         )
+        if location:
+            statement = statement.where(
+                func.lower(func.coalesce(Observation.location, "")).like(
+                    f"%{location.casefold()}%"
+                )
+            )
         total = self.session.scalar(
             select(func.count()).select_from(statement.subquery())
         ) or 0
@@ -240,6 +248,70 @@ class ObservationRepository:
             )
         )
         return items, total
+
+    def find_reference(self, reference: str) -> Observation | None:
+        cleaned = reference.strip()
+        if not cleaned:
+            return None
+        exact = self.get(cleaned)
+        if exact is not None:
+            return exact
+        pattern = f"%{cleaned.casefold()}%"
+        statement = (
+            select(Observation)
+            .where(
+                or_(
+                    func.lower(func.coalesce(Observation.title, "")).like(pattern),
+                    func.lower(func.coalesce(Observation.location, "")).like(pattern),
+                )
+            )
+            .options(
+                selectinload(Observation.objects),
+                selectinload(Observation.relations),
+            )
+            .order_by(Observation.created_at.desc(), Observation.id.desc())
+            .limit(1)
+        )
+        return self.session.scalar(statement)
+
+    def count_objects(
+        self,
+        *,
+        terms: Sequence[str] | None = None,
+        location: str | None = None,
+    ) -> int:
+        statement = select(func.count(ObservedObject.row_id)).join(Observation)
+        if terms:
+            conditions = []
+            for term in terms:
+                pattern = f"%{term.casefold()}%"
+                conditions.extend(
+                    (
+                        func.lower(ObservedObject.label).like(pattern),
+                        func.lower(ObservedObject.display_name).like(pattern),
+                    )
+                )
+            statement = statement.where(or_(*conditions))
+        if location:
+            statement = statement.where(
+                func.lower(func.coalesce(Observation.location, "")).like(
+                    f"%{location.casefold()}%"
+                )
+            )
+        return self.session.scalar(statement) or 0
+
+    def demo_observations(self) -> list[Observation]:
+        return list(
+            self.session.scalars(
+                select(Observation)
+                .where(Observation.engine == "demo-seed")
+                .options(
+                    selectinload(Observation.objects),
+                    selectinload(Observation.relations),
+                )
+                .order_by(Observation.created_at.desc(), Observation.id.desc())
+            )
+        )
 
     def delete(self, model: Observation) -> None:
         self.session.delete(model)

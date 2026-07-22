@@ -20,26 +20,32 @@ class MemoryNotFoundError(LookupError):
     pass
 
 
-_QUERY_ALIASES = {
+QUERY_ALIASES = {
     "人物": ("人物", "人", "person"),
     "人": ("人", "person"),
     "电脑": ("电脑", "笔记本电脑", "laptop"),
     "笔记本": ("笔记本", "笔记本电脑", "laptop"),
+    "计算机": ("计算机", "电脑", "笔记本电脑", "laptop"),
     "手机": ("手机", "cell phone"),
     "杯子": ("杯子", "cup"),
+    "水杯": ("水杯", "杯子", "cup"),
+    "椅子": ("椅子", "chair"),
+    "书": ("书", "book"),
+    "书本": ("书本", "书", "book"),
+    "瓶子": ("瓶子", "bottle"),
     "背包": ("背包", "backpack"),
 }
 
 
-def _search_terms(query: str) -> tuple[str, ...]:
+def search_terms(query: str) -> tuple[str, ...]:
     cleaned = query.strip()
     if not cleaned:
         raise ValueError("q must not be empty")
-    aliases = _QUERY_ALIASES.get(cleaned)
+    aliases = QUERY_ALIASES.get(cleaned)
     return tuple(dict.fromkeys((cleaned, *(aliases or ()))))
 
 
-def _matches(item: ObservedObject, terms: Iterable[str]) -> bool:
+def object_matches(item: ObservedObject, terms: Iterable[str]) -> bool:
     label = item.label.casefold()
     display_name = item.display_name.casefold()
     return any(
@@ -71,14 +77,16 @@ class MemoryService:
         self.settings = settings
 
     def last_seen(self, query: str) -> LastSeenResponse:
-        terms = _search_terms(query)
+        terms = search_terms(query)
         observations, _ = self.repository.matching(terms=terms, limit=1, offset=0)
         if not observations:
             raise MemoryNotFoundError(f"No observation matched {query!r}")
         match = self._memory_match(observations[0], terms)
         matched_labels = list(
             dict.fromkeys(
-                item.label for item in observations[0].objects if _matches(item, terms)
+                item.label
+                for item in observations[0].objects
+                if object_matches(item, terms)
             )
         )
         return LastSeenResponse(
@@ -94,7 +102,7 @@ class MemoryService:
         limit: int,
         offset: int,
     ) -> HistoryResponse:
-        terms = _search_terms(query)
+        terms = search_terms(query)
         observations, total = self.repository.matching(
             terms=terms,
             limit=limit,
@@ -113,7 +121,9 @@ class MemoryService:
         observation: Observation,
         terms: tuple[str, ...],
     ) -> MemoryMatch:
-        matched_objects = [item for item in observation.objects if _matches(item, terms)]
+        matched_objects = [
+            item for item in observation.objects if object_matches(item, terms)
+        ]
         matched_ids = {item.id for item in matched_objects}
         names = build_object_name_map(observation.objects)
         relation_context = self._relation_context(
@@ -126,6 +136,35 @@ class MemoryService:
             matched_object_ids=[item.id for item in matched_objects],
             matched_names=[names[item.id] for item in matched_objects],
             relations=relation_context,
+        )
+
+    def match_observation(
+        self,
+        observation: Observation,
+        terms: tuple[str, ...],
+    ) -> MemoryMatch:
+        """Build the same grounded match shape used by memory endpoints."""
+
+        return self._memory_match(observation, terms)
+
+    def match_all_objects(self, observation: Observation) -> MemoryMatch:
+        names = build_object_name_map(observation.objects)
+        object_ids = {item.id for item in observation.objects}
+        return MemoryMatch(
+            observation=observation_summary(observation),
+            matched_object_ids=[
+                item.id
+                for item in sorted(observation.objects, key=lambda item: item.sort_order)
+            ],
+            matched_names=[
+                names[item.id]
+                for item in sorted(observation.objects, key=lambda item: item.sort_order)
+            ],
+            relations=self._relation_context(
+                observation.relations,
+                object_ids,
+                names,
+            ),
         )
 
     def _relation_context(

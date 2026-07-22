@@ -48,16 +48,24 @@ Competition submission deadline: 2026-08-08.
 - Configurable thresholds, deterministic scores, sorting, and output cap
 - Responsive frontend relation presentation
 
-## Current milestone
-
 ### Day 5 + Day 6 — Persistent scene memory and retrieval
 
-Implementation is ready for user verification: SQLite observation snapshots, filesystem image storage, memory timeline/detail, label-based last-seen, and paginated history retrieval.
+- SQLite observation, object and relation snapshots
+- UUID-based filesystem image storage with transactional cleanup
+- Memory timeline, detail, delete, last-seen and paginated history
+- Stable repeated-object numbering and label-based retrieval limitations
+
+## Current milestone
+
+### Day 7 + Day 8 — Grounded Agent and competition package
+
+Implementation is ready for user verification: deterministic agent intents and tools, evidence-first `/agent`, explicit limitations, demo seeding/reset, evaluation/report tooling, fake-inference end-to-end smoke coverage, product polish, and competition documentation.
 
 ## Next milestones
 
-- Day 7: agent tool orchestration
-- Day 8+: evaluation, UX polish, deployment, submission materials
+- Run required backend/frontend checks and manual real-YOLO acceptance.
+- Record real-image evaluation results without claiming unmeasured metrics.
+- Merge the Day 7/8 feature branch and rehearse the competition demo.
 
 ## Product constraints
 

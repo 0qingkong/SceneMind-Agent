@@ -1,6 +1,6 @@
 # SceneMind Agent
 
-SceneMind Agent 是一个面向移动端的多模态空间记忆产品。当前 Day 5/6 版本可检测场景物体、推导二维空间关系、持久化场景观察，并按物体标签检索最后出现位置和历史记录。
+SceneMind Agent 是一个面向移动端的多模态空间记忆产品。当前 Day 7/8 实现可检测场景物体、推导二维空间关系、持久化场景观察，并通过受约束的自然语言 Agent 返回可打开的图片证据。
 
 ## 技术栈
 
@@ -9,6 +9,7 @@ SceneMind Agent 是一个面向移动端的多模态空间记忆产品。当前 
 - 检测器：Ultralytics YOLO（默认 `yolo26n.pt`）
 - 空间推理：确定性归一化边界框几何规则
 - 场景记忆：SQLite 元数据 + 本地文件系统图片
+- 记忆 Agent：确定性意图规划 + 只读工具 + 证据约束回答
 - API 前缀：`/api/v1`
 
 ## 后端安装与启动
@@ -31,6 +32,7 @@ cd backend
 - 场景观察：`/api/v1/observations`
 - 最近出现：`GET /api/v1/memory/last-seen?q=杯子`
 - 历史记录：`GET /api/v1/memory/history?q=cup`
+- 记忆 Agent：`POST /api/v1/agent/query`
 
 首次执行真实推理时，Ultralytics 可能联网下载 `yolo26n.pt` 权重，因此第一次请求会明显更慢。权重、`runs/` 和上传图片已被 Git 忽略，不应提交。
 
@@ -86,6 +88,9 @@ $env:ANALYZER_MODE = "mock"
 | `MEMORY_HISTORY_DEFAULT_LIMIT` | `20` | 历史检索默认页大小 |
 | `MEMORY_HISTORY_MAX_LIMIT` | `100` | 历史检索最大页大小 |
 | `MEMORY_RELATION_CONTEXT_LIMIT` | `8` | 单条检索结果的最大关系上下文数 |
+| `AGENT_DEFAULT_LIMIT` | `3` | Agent 列表类查询的默认结果数 |
+| `AGENT_MAX_LIMIT` | `20` | Agent 单次查询允许的最大结果数 |
+| `DEMO_MODE` | `false` | 启动时幂等添加带明显标记的生成式演示观察 |
 
 观察 API：
 
@@ -100,6 +105,45 @@ $env:ANALYZER_MODE = "mock"
 删除时图片先原子移动到待删除文件，数据库提交成功后再清理；数据库失败会恢复图片。如果最终文件清理失败，API 会明确报错，数据库记录已经删除，隐藏的待删除文件需要运维清理。
 
 SQLite 和本地文件系统是比赛 MVP 基础设施。以后可以替换为 PostgreSQL 和对象存储；当前数据量与查询模式不需要向量数据库或图数据库。
+
+## Grounded Memory Agent
+
+`POST /api/v1/agent/query` 接收：
+
+```json
+{"query":"我的杯子最后出现在哪里？"}
+```
+
+Agent 支持最后出现、历史场景、最近观察、指定记录详情、物体检测数量、帮助和未知问题七类意图。规划器不调用外部大模型；工具只包装现有 Memory/Observation 服务。响应包含意图、回答、折叠工具轨迹、证据卡和限制声明。无匹配或超出范围时不会猜测。
+
+类别检索不证明跨图片是同一个现实物体，二维关系也不证明真实深度或物理距离。相关回答会明确显示这些限制。
+
+## Demo Mode
+
+演示数据默认关闭：
+
+```powershell
+$env:DEMO_MODE="true"
+cd backend
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+```
+
+启用后添加三条由项目代码生成的示例观察。固定 ID 保证重复启动不会重复写入；引擎标记和前端徽标会显示“演示数据”。已有真实记录永远不会被覆盖。仅清理演示数据：
+
+```powershell
+cd backend
+..\.venv\Scripts\python.exe scripts\reset_demo.py
+```
+
+## 文档与评估
+
+- [架构](docs/ARCHITECTURE.md)
+- [3–5 分钟演示脚本](docs/DEMO_SCRIPT.md)
+- [评估方法](docs/EVALUATION.md)
+- [部署](docs/DEPLOYMENT.md)
+- [竞赛摘要](docs/COMPETITION_SUMMARY.md)
+
+评估模板中的人工指标默认为 `not_run`，不会被误报为通过。填写 `backend/evaluation/cases.json` 的实测字段后，在 `backend` 运行 `..\.venv\Scripts\python.exe scripts\run_evaluation.py` 生成 JSON 和 Markdown 报告。
 
 ## 前端安装与启动
 
@@ -125,4 +169,4 @@ npm run build
 
 ## 当前范围
 
-Day 5/6 实现场景观察持久化和基于标签的最后出现/历史检索。跨图身份跟踪、自然语言 Agent、VLM/深度估计、登录和部署属于后续里程碑。
+Day 7/8 完成受约束的证据型记忆 Agent、演示模式、端到端 smoke 测试、评估工具和竞赛文档。跨图身份跟踪、开放领域聊天、VLM/深度估计、登录和分布式部署不属于本次 MVP。

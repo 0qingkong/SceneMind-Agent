@@ -9,12 +9,14 @@
     <div class="hero-actions">
       <RouterLink class="primary-link" to="/analyze">分析第一张图片</RouterLink>
       <RouterLink class="secondary-link" to="/memory">查看空间记忆</RouterLink>
+      <RouterLink class="secondary-link" to="/agent">询问记忆 Agent</RouterLink>
     </div>
 
     <div class="capability-grid">
-      <article><span>01</span><h2>场景感知</h2><p>识别物体并提供边界框证据。</p></article>
-      <article><span>02</span><h2>空间关系</h2><p>理解上下、左右、包含和邻近。</p></article>
-      <article><span>03</span><h2>长期记忆</h2><p>回答物品最后出现的时间和位置。</p></article>
+      <article><span>01</span><h2>看见场景</h2><p>真实检测物体并保留边界框证据。</p></article>
+      <article><span>02</span><h2>理解关系</h2><p>从二维几何推导上下、左右、包含和邻近。</p></article>
+      <article><span>03</span><h2>形成记忆</h2><p>保存场景、物体、关系、地点与时间。</p></article>
+      <article><span>04</span><h2>自然语言检索</h2><p>通过 Agent 查询记忆并打开原始图片证据。</p></article>
     </div>
   </section>
 </template>

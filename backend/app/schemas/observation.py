@@ -23,6 +23,7 @@ class ObservationSummary(BaseModel):
     object_count: int = Field(ge=0)
     relation_count: int = Field(ge=0)
     labels: list[str] = Field(default_factory=list)
+    is_demo: bool = False
 
 
 class ObservationDetail(ObservationSummary):

@@ -18,7 +18,7 @@ function formattedTime(value: string) {
     <div class="observation-card-body">
       <div class="observation-card-heading">
         <strong>{{ observation.title || '未命名场景' }}</strong>
-        <small>{{ formattedTime(observation.created_at) }}</small>
+        <div><span v-if="observation.is_demo" class="demo-inline">演示</span><small>{{ formattedTime(observation.created_at) }}</small></div>
       </div>
       <span v-if="observation.location" class="observation-location">{{ observation.location }}</span>
       <p>{{ observation.summary }}</p>

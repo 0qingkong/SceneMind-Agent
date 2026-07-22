@@ -4,6 +4,9 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+from app.agent.executor import AgentExecutor
+from app.agent.planner import AgentPlanner
+from app.agent.tools import AgentTools
 from app.core.config import Settings
 from app.db import Database
 from app.services.analyzers import SceneAnalyzer, create_analyzer
@@ -62,3 +65,14 @@ def get_memory_service(
     configured_settings: Annotated[Settings, Depends(get_settings)],
 ) -> MemoryService:
     return MemoryService(session, configured_settings)
+
+
+def get_agent_executor(
+    memory: Annotated[MemoryService, Depends(get_memory_service)],
+    configured_settings: Annotated[Settings, Depends(get_settings)],
+) -> AgentExecutor:
+    planner = AgentPlanner(
+        default_limit=configured_settings.agent_default_limit,
+        max_limit=configured_settings.agent_max_limit,
+    )
+    return AgentExecutor(planner, AgentTools(memory, configured_settings))

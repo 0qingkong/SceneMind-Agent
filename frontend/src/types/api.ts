@@ -60,6 +60,7 @@ export interface ObservationSummary {
   object_count: number
   relation_count: number
   labels: string[]
+  is_demo: boolean
 }
 
 export interface ObservationDetail extends ObservationSummary {
@@ -107,4 +108,41 @@ export interface HistoryResponse {
   total: number
   limit: number
   offset: number
+}
+
+export type AgentIntent =
+  | 'last_seen'
+  | 'history'
+  | 'recent_observations'
+  | 'observation_detail'
+  | 'object_count'
+  | 'help'
+  | 'unknown'
+
+export interface AgentToolStep {
+  tool: string
+  arguments: Record<string, string | number | null>
+  status: 'success' | 'no_match' | 'skipped'
+  result_count: number
+}
+
+export interface AgentEvidence {
+  observation_id: string
+  title: string | null
+  location: string | null
+  timestamp: string
+  image_url: string
+  detail_url: string
+  matched_objects: string[]
+  relation_context: RelationContext[]
+  is_demo: boolean
+}
+
+export interface AgentQueryResponse {
+  query: string
+  intent: AgentIntent
+  answer: string
+  tool_steps: AgentToolStep[]
+  evidence: AgentEvidence[]
+  limitations: string[]
 }

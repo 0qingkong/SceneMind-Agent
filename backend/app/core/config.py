@@ -61,6 +61,9 @@ class Settings:
     memory_history_default_limit: int = 20
     memory_history_max_limit: int = 100
     memory_relation_context_limit: int = 8
+    agent_default_limit: int = 3
+    agent_max_limit: int = 20
+    demo_mode: bool = False
 
     def __post_init__(self) -> None:
         if not 0 <= self.yolo_conf <= 1:
@@ -99,6 +102,8 @@ class Settings:
             "MEMORY_HISTORY_DEFAULT_LIMIT": self.memory_history_default_limit,
             "MEMORY_HISTORY_MAX_LIMIT": self.memory_history_max_limit,
             "MEMORY_RELATION_CONTEXT_LIMIT": self.memory_relation_context_limit,
+            "AGENT_DEFAULT_LIMIT": self.agent_default_limit,
+            "AGENT_MAX_LIMIT": self.agent_max_limit,
         }
         if any(value <= 0 for value in limits.values()):
             invalid = next(name for name, value in limits.items() if value <= 0)
@@ -111,6 +116,8 @@ class Settings:
             raise ValueError(
                 "MEMORY_HISTORY_DEFAULT_LIMIT must not exceed MEMORY_HISTORY_MAX_LIMIT"
             )
+        if self.agent_default_limit > self.agent_max_limit:
+            raise ValueError("AGENT_DEFAULT_LIMIT must not exceed AGENT_MAX_LIMIT")
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str] | None = None) -> Settings:
@@ -160,4 +167,7 @@ class Settings:
             memory_relation_context_limit=_read_int(
                 source, "MEMORY_RELATION_CONTEXT_LIMIT", 8
             ),
+            agent_default_limit=_read_int(source, "AGENT_DEFAULT_LIMIT", 3),
+            agent_max_limit=_read_int(source, "AGENT_MAX_LIMIT", 20),
+            demo_mode=_read_bool(source, "DEMO_MODE", False),
         )
