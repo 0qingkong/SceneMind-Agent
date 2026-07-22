@@ -61,3 +61,19 @@ Status: accepted
 Decision: last-seen and history queries match detector labels and display names with partial, case-insensitive English matching and selected Chinese aliases. Results return observation evidence and never claim cross-image object identity.
 
 Reason: reliable identity tracking requires additional visual embeddings or tracking evidence. The MVP can truthfully answer where a class label was most recently detected using ordinary indexed relational queries; vector and graph databases are unnecessary at this stage.
+
+## ADR-009 — Deterministic grounded memory agent
+
+Status: accepted
+
+Decision: natural-language memory questions are mapped to a closed set of intents by deterministic rules. Read-only tools wrap existing repositories and services, and the formatter may only describe returned structured results. Responses include tool traces, evidence cards and relevant limitation text.
+
+Reason: the competition questions are narrow and testable. An open-domain model would add latency, network dependency and hallucination risk without improving grounded retrieval. The package boundary allows a future planner to change while preserving the same tools and evidence contract.
+
+## ADR-010 — Explicit generated demo observations
+
+Status: accepted
+
+Decision: `DEMO_MODE` defaults off. When enabled, code-generated permitted scenes use fixed IDs, an `[演示]` title prefix and the `demo-seed` engine marker. Seeding skips every existing ID, and reset selects only the engine marker.
+
+Reason: a reliable fallback should be reproducible and visibly distinct from real inference. Fixed IDs provide idempotence; engine-scoped reset prevents deletion of user data. No generated observation is represented as a real YOLO result.

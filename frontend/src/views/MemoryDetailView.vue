@@ -61,6 +61,7 @@ onMounted(loadObservation)
           :loading="false"
         />
         <div class="detail-metadata">
+          <span v-if="observation.is_demo" class="demo-inline">演示数据</span>
           <span>{{ new Date(observation.created_at).toLocaleString('zh-CN') }}</span>
           <span v-if="observation.location">{{ observation.location }}</span>
           <span>{{ observation.image_width }}×{{ observation.image_height }}</span>

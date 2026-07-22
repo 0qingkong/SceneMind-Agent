@@ -1,0 +1,30 @@
+{
+  "agent_intent_cases": [
+    {"query": "我的杯子最后出现在哪里？", "expected": "last_seen"},
+    {"query": "Where was my mug last seen?", "expected": "last_seen"},
+    {"query": "最近在哪些场景里见过人物？", "expected": "history"},
+    {"query": "show recent scenes where a laptop was seen", "expected": "history"},
+    {"query": "展示最近三条场景记忆", "expected": "recent_observations"},
+    {"query": "图书馆那条记录里检测到了什么？", "expected": "observation_detail"},
+    {"query": "一共检测到多少个人？", "expected": "object_count"},
+    {"query": "how many chairs were detected?", "expected": "object_count"},
+    {"query": "帮助", "expected": "help"},
+    {"query": "今天天气怎么样？", "expected": "unknown"}
+  ],
+  "detection_cases": [
+    {"id": "desk-real-yolo", "success": null, "latency_ms": null, "notes": "Run with a permitted desk image."},
+    {"id": "classroom-real-yolo", "success": null, "latency_ms": null, "notes": "Run with a permitted classroom image."}
+  ],
+  "spatial_relation_checks": [
+    {"id": "desk-relations", "correct": null, "notes": "Manually compare collapsed UI relations with bounding boxes."}
+  ],
+  "persistence_checks": [
+    {"id": "save-restart-delete", "passed": null, "notes": "Save, restart backend, retrieve, then delete and verify image cleanup."}
+  ],
+  "memory_checks": [
+    {"id": "last-seen-history-order", "passed": null, "notes": "Verify newest-first ordering with known observations."}
+  ],
+  "grounding_checks": [
+    {"id": "agent-evidence-links", "passed": null, "hallucinations": null, "notes": "Every factual answer must link to returned observation evidence."}
+  ]
+}

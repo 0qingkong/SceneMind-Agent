@@ -89,12 +89,12 @@ onBeforeUnmount(clearPreview)
   <section>
     <div class="page-heading">
       <div><p class="eyebrow">SCENE ANALYSIS</p><h1>场景分析工作台</h1></div>
-      <span>Day 4</span>
+      <span>Detect · Reason · Remember</span>
     </div>
 
     <div class="workspace-grid">
       <section class="workspace-panel">
-        <h2>上传场景图片</h2>
+        <h2>上传并建立场景记忆</h2>
         <label v-if="!previewUrl" class="upload-dropzone">
           <input type="file" accept="image/jpeg,image/png,image/webp" @change="handleFileChange" />
           <strong>点击选择图片</strong>
@@ -113,9 +113,9 @@ onBeforeUnmount(clearPreview)
           <input v-model="sceneLocation" maxlength="200" placeholder="位置（可选）" />
         </div>
         <div class="analysis-actions">
-          <button class="secondary-button" :disabled="!canAnalyze" @click="handleAnalyze(false)">仅分析</button>
+          <button class="secondary-button" :disabled="!canAnalyze" @click="handleAnalyze(false)">仅查看检测结果</button>
           <button class="primary-button" :disabled="!canAnalyze" @click="handleAnalyze(true)">
-            {{ isAnalyzing ? '分析进行中…' : '分析并记忆' }}
+            {{ isAnalyzing ? '正在检测与推理…' : '分析并保存到记忆' }}
           </button>
         </div>
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>

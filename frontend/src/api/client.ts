@@ -5,6 +5,7 @@ import type {
   ObservationListResponse,
   HistoryResponse,
   LastSeenResponse,
+  AgentQueryResponse,
 } from '../types/api'
 
 const api = axios.create({
@@ -71,5 +72,10 @@ export async function getHistory(
   const response = await api.get<HistoryResponse>('/memory/history', {
     params: { q: query, ...params },
   })
+  return response.data
+}
+
+export async function queryAgent(query: string): Promise<AgentQueryResponse> {
+  const response = await api.post<AgentQueryResponse>('/agent/query', { query })
   return response.data
 }

@@ -1,0 +1,4 @@
+{
+  "status": "not_run",
+  "message": "Run backend/scripts/run_evaluation.py after completing the manual fields in backend/evaluation/cases.json. No benchmark result is claimed by this placeholder."
+}
