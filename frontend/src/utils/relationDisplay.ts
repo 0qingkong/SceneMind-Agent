@@ -1,4 +1,15 @@
-import type { DetectedRelation } from '../types/api'
+import type { DetectedRelation, RelationPredicate } from '../types/api'
+
+export const predicateLabels: Record<RelationPredicate, string> = {
+  left_of: '位于左侧',
+  right_of: '位于右侧',
+  above: '位于上方',
+  below: '位于下方',
+  near: '靠近',
+  overlaps: '发生重叠',
+  inside: '位于内部',
+  contains: '包含',
+}
 
 function reciprocalKey(relation: DetectedRelation) {
   const { subject_id: subjectId, object_id: objectId, predicate } = relation

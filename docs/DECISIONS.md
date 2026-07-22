@@ -45,3 +45,19 @@ Decision: Day 4 spatial relations are derived from normalized two-dimensional bo
 Reason: geometric rules are fast, reproducible, explainable, and require no additional heavyweight model. Their evidence can be inspected directly through center distance, IoU, or containment ratio.
 
 Limit: image-plane geometry does not establish physical support, depth ordering, or metric distance. Relations such as `on`, `under`, `in_front_of`, and `behind` are excluded. Semantic or three-dimensional relations may be added later through a VLM or depth estimation while preserving the current evidence-backed contract.
+
+## ADR-007 — SQLite metadata with filesystem image storage
+
+Status: accepted
+
+Decision: the competition MVP stores observation, object, and relation metadata in SQLite through SQLAlchemy 2.x, while image bytes remain in a UUID-named filesystem directory. Observation rows contain only relative image paths.
+
+Reason: this is transactional enough for a single-machine demonstration, easy to inspect and back up, and avoids placing large binary payloads in the relational database. Repository, service, and storage boundaries allow PostgreSQL and object storage to replace local infrastructure later without changing API contracts.
+
+## ADR-008 — Label-based memory retrieval
+
+Status: accepted
+
+Decision: last-seen and history queries match detector labels and display names with partial, case-insensitive English matching and selected Chinese aliases. Results return observation evidence and never claim cross-image object identity.
+
+Reason: reliable identity tracking requires additional visual embeddings or tracking evidence. The MVP can truthfully answer where a class label was most recently detected using ordinary indexed relational queries; vector and graph databases are unnecessary at this stage.

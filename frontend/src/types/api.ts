@@ -77,3 +77,34 @@ export interface ObservationListResponse {
   limit: number
   offset: number
 }
+
+export interface RelationContext {
+  relation_id: string
+  subject_id: string
+  subject_name: string
+  predicate: RelationPredicate
+  object_id: string
+  object_name: string
+  score: number
+}
+
+export interface MemoryMatch {
+  observation: ObservationSummary
+  matched_object_ids: string[]
+  matched_names: string[]
+  relations: RelationContext[]
+}
+
+export interface LastSeenResponse {
+  query: string
+  matched_labels: string[]
+  result: MemoryMatch
+}
+
+export interface HistoryResponse {
+  query: string
+  items: MemoryMatch[]
+  total: number
+  limit: number
+  offset: number
+}

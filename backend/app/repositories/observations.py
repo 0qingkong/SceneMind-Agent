@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime, timezone
 
 from sqlalchemy import func, or_, select
@@ -208,18 +209,21 @@ class ObservationRepository:
     def matching(
         self,
         *,
-        query: str,
+        terms: Sequence[str],
         limit: int,
         offset: int,
     ) -> tuple[list[Observation], int]:
-        pattern = f"%{query.casefold()}%"
-        statement = select(Observation).where(
-            Observation.objects.any(
-                or_(
+        object_conditions = []
+        for term in terms:
+            pattern = f"%{term.casefold()}%"
+            object_conditions.extend(
+                (
                     func.lower(ObservedObject.label).like(pattern),
                     func.lower(ObservedObject.display_name).like(pattern),
                 )
             )
+        statement = select(Observation).where(
+            Observation.objects.any(or_(*object_conditions))
         )
         total = self.session.scalar(
             select(func.count()).select_from(statement.subquery())

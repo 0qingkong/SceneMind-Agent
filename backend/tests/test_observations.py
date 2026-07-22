@@ -14,6 +14,7 @@ from app.schemas.analyze import DetectedObject
 from app.services.analysis_service import AnalysisService
 from app.services.analyzers import AnalysisResult, AnalyzerError
 from app.services.image_storage import ImageStorage, ImageStorageError
+from app.services.observation_service import ObservationService
 from app.services.spatial import SpatialReasoner
 
 
@@ -87,7 +88,9 @@ def test_create_retrieve_list_and_delete_observation(observation_client) -> None
     assert payload["object_count"] == 2
     assert [item["sort_order"] for item in payload["objects"]] == [0, 1]
     assert payload["relations"]
-    assert not Path(payload["image_url"]).is_absolute()
+    assert payload["created_at"].endswith(("Z", "+00:00"))
+    assert payload["image_url"] == f"/api/v1/observations/{observation_id}/image"
+    assert str(storage.root) not in str(payload)
     assert all(
         relation["subject_id"] in {"object-1", "object-2"}
         and relation["object_id"] in {"object-1", "object-2"}
@@ -97,12 +100,18 @@ def test_create_retrieve_list_and_delete_observation(observation_client) -> None
     detail = client.get(f"/api/v1/observations/{observation_id}")
     assert detail.status_code == 200
     assert detail.json()["objects"] == payload["objects"]
-    listing = client.get("/api/v1/observations?label=PERSON&q=人物")
+    listing = client.get("/api/v1/observations?label=PERSON&q=人")
     assert listing.status_code == 200
     assert listing.json()["total"] == 1
     image = client.get(f"/api/v1/observations/{observation_id}/image")
     assert image.status_code == 200
     assert image.headers["content-type"] == "image/jpeg"
+    saved_images = list(storage.root.glob("*.jpg"))
+    assert len(saved_images) == 1
+    assert saved_images[0].stem.isalnum() and len(saved_images[0].stem) == 32
+
+    saved_images[0].unlink()
+    assert client.get(f"/api/v1/observations/{observation_id}/image").status_code == 404
 
     assert client.delete(f"/api/v1/observations/{observation_id}").status_code == 204
     assert client.get(f"/api/v1/observations/{observation_id}").status_code == 404
@@ -148,3 +157,28 @@ def test_storage_rejects_path_traversal(tmp_path: Path) -> None:
     storage = ImageStorage(tmp_path / "images")
     with pytest.raises(ImageStorageError):
         storage.resolve("../outside.jpg")
+
+
+def test_persistence_failure_cleans_saved_image(tmp_path: Path) -> None:
+    database = Database(f"sqlite:///{tmp_path / 'failure.db'}")
+    database.create_tables()
+    storage = ImageStorage(tmp_path / "images")
+    analysis = AnalysisService(ObservationAnalyzer(), SpatialReasoner())
+    with database.session_factory() as session:
+        service = ObservationService(session, analysis, storage)
+
+        def fail_create(**_: object):
+            raise RuntimeError("database write failed")
+
+        service.repository.create = fail_create  # type: ignore[method-assign]
+        with pytest.raises(Exception, match="Unable to persist"):
+            service.create(
+                image_bytes=test_image().getvalue(),
+                filename="people.jpg",
+                content_type="image/jpeg",
+                title=None,
+                location=None,
+            )
+    assert storage.root.exists()
+    assert not list(storage.root.iterdir())
+    database.engine.dispose()

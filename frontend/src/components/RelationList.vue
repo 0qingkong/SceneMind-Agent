@@ -4,26 +4,14 @@ import { computed } from 'vue'
 import type {
   DetectedObject,
   DetectedRelation,
-  RelationPredicate,
 } from '../types/api'
 import { buildObjectDisplayNameMap, objectDisplayName } from '../utils/objectDisplayNames'
-import { collapseReciprocalRelations } from '../utils/relationDisplay'
+import { collapseReciprocalRelations, predicateLabels } from '../utils/relationDisplay'
 
 const props = defineProps<{
   objects: DetectedObject[]
   relations: DetectedRelation[]
 }>()
-
-const predicateLabels: Record<RelationPredicate, string> = {
-  left_of: '位于左侧',
-  right_of: '位于右侧',
-  above: '位于上方',
-  below: '位于下方',
-  near: '靠近',
-  overlaps: '发生重叠',
-  inside: '位于内部',
-  contains: '包含',
-}
 
 const objectNames = computed(() => buildObjectDisplayNameMap(props.objects))
 const visibleRelations = computed(() => collapseReciprocalRelations(props.relations))

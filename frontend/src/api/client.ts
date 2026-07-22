@@ -3,6 +3,8 @@ import type {
   AnalyzeResponse,
   ObservationDetail,
   ObservationListResponse,
+  HistoryResponse,
+  LastSeenResponse,
 } from '../types/api'
 
 const api = axios.create({
@@ -53,4 +55,21 @@ export async function deleteObservation(id: string): Promise<void> {
 export function apiAssetUrl(path: string) {
   const base = api.defaults.baseURL ?? window.location.origin
   return new URL(path, base).toString()
+}
+
+export async function getLastSeen(query: string): Promise<LastSeenResponse> {
+  const response = await api.get<LastSeenResponse>('/memory/last-seen', {
+    params: { q: query },
+  })
+  return response.data
+}
+
+export async function getHistory(
+  query: string,
+  params?: { limit?: number; offset?: number },
+): Promise<HistoryResponse> {
+  const response = await api.get<HistoryResponse>('/memory/history', {
+    params: { q: query, ...params },
+  })
+  return response.data
 }

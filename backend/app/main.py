@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.analyze import router as analyze_router
 from app.api.routes.health import router as health_router
+from app.api.routes.memory import router as memory_router
 from app.api.routes.observations import router as observations_router
 from app.dependencies import database
 
@@ -32,6 +33,7 @@ app.add_middleware(
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(analyze_router, prefix="/api/v1")
 app.include_router(observations_router, prefix="/api/v1")
+app.include_router(memory_router, prefix="/api/v1")
 
 
 @app.get("/")

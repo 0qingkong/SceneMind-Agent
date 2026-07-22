@@ -9,6 +9,7 @@ from app.db import Database
 from app.services.analyzers import SceneAnalyzer, create_analyzer
 from app.services.analysis_service import AnalysisService
 from app.services.image_storage import ImageStorage
+from app.services.memory_service import MemoryService
 from app.services.observation_service import ObservationService
 from app.services.spatial import SpatialReasoner
 
@@ -54,3 +55,10 @@ def get_observation_service(
     storage: Annotated[ImageStorage, Depends(get_image_storage)],
 ) -> ObservationService:
     return ObservationService(session, service, storage)
+
+
+def get_memory_service(
+    session: Annotated[Session, Depends(get_db_session)],
+    configured_settings: Annotated[Settings, Depends(get_settings)],
+) -> MemoryService:
+    return MemoryService(session, configured_settings)
