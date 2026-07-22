@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import type { DetectedObject } from '../types/api'
+import { computed } from 'vue'
 
-defineProps<{
+import type { DetectedObject } from '../types/api'
+import { buildObjectDisplayNameMap, objectDisplayName } from '../utils/objectDisplayNames'
+
+const props = defineProps<{
   imageUrl: string
   objects: DetectedObject[]
   loading: boolean
 }>()
+
+const objectNames = computed(() => buildObjectDisplayNameMap(props.objects))
 
 function boxStyle(bbox: [number, number, number, number]) {
   const [x1, y1, x2, y2] = bbox
@@ -27,7 +32,7 @@ function boxStyle(bbox: [number, number, number, number]) {
       class="bbox"
       :style="boxStyle(item.bbox)"
     >
-      <span>{{ item.display_name }} {{ Math.round(item.confidence * 100) }}%</span>
+      <span>{{ objectDisplayName(objectNames, item.id) }} {{ Math.round(item.confidence * 100) }}%</span>
     </div>
     <div v-if="loading" class="scan-line"></div>
     <div v-if="loading" class="analyzing-overlay">

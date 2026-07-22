@@ -1,6 +1,6 @@
 # SceneMind Agent
 
-SceneMind Agent 是一个面向移动端的多模态空间记忆产品。当前 Day 4 版本可上传场景图片，使用 Ultralytics YOLO 进行真实物体检测，并通过可解释的二维几何规则推导空间关系。
+SceneMind Agent 是一个面向移动端的多模态空间记忆产品。当前 Day 5/6 版本可检测场景物体、推导二维空间关系、持久化场景观察，并按物体标签检索最后出现位置和历史记录。
 
 ## 技术栈
 
@@ -8,6 +8,7 @@ SceneMind Agent 是一个面向移动端的多模态空间记忆产品。当前 
 - 后端：FastAPI、Pydantic、Pillow
 - 检测器：Ultralytics YOLO（默认 `yolo26n.pt`）
 - 空间推理：确定性归一化边界框几何规则
+- 场景记忆：SQLite 元数据 + 本地文件系统图片
 - API 前缀：`/api/v1`
 
 ## 后端安装与启动
@@ -27,6 +28,9 @@ cd backend
 - API 文档：http://127.0.0.1:8000/docs
 - 健康检查：http://127.0.0.1:8000/api/v1/health
 - 分析接口：`POST http://127.0.0.1:8000/api/v1/analyze`
+- 场景观察：`/api/v1/observations`
+- 最近出现：`GET /api/v1/memory/last-seen?q=杯子`
+- 历史记录：`GET /api/v1/memory/history?q=cup`
 
 首次执行真实推理时，Ultralytics 可能联网下载 `yolo26n.pt` 权重，因此第一次请求会明显更慢。权重、`runs/` 和上传图片已被 Git 忽略，不应提交。
 
@@ -69,6 +73,34 @@ $env:ANALYZER_MODE = "mock"
 
 这些关系只描述二维图像平面，不能证明物理支撑、真实深度或厘米距离，因此不会生成 `on`、`in_front_of`、`behind` 等谓词。
 
+## 场景记忆与检索
+
+“分析并记忆”只执行一次检测：共享分析服务完成图片校验、目标检测和空间推理，随后将观察快照事务性写入 SQLite，并将原图保存到文件系统。数据库保存相对图片路径，不保存图片字节，也不会向 API 暴露绝对路径。
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `DATABASE_URL` | `sqlite:///./data/scenemind.db` | SQLAlchemy 数据库地址 |
+| `SCENE_STORAGE_DIR` | `./data/images` | 场景图片目录 |
+| `OBSERVATION_DEFAULT_LIMIT` | `20` | 观察列表默认页大小 |
+| `OBSERVATION_MAX_LIMIT` | `100` | 观察列表最大页大小 |
+| `MEMORY_HISTORY_DEFAULT_LIMIT` | `20` | 历史检索默认页大小 |
+| `MEMORY_HISTORY_MAX_LIMIT` | `100` | 历史检索最大页大小 |
+| `MEMORY_RELATION_CONTEXT_LIMIT` | `8` | 单条检索结果的最大关系上下文数 |
+
+观察 API：
+
+- `POST /api/v1/observations`：multipart 字段 `file`、可选 `title` 和 `location`
+- `GET /api/v1/observations`：支持 `limit`、`offset`、`label` 和 `q`
+- `GET /api/v1/observations/{id}`：恢复完整观察快照
+- `GET /api/v1/observations/{id}/image`：安全读取已保存图片
+- `DELETE /api/v1/observations/{id}`：删除观察、子记录和图片
+
+最近出现查询是标签检索，不是跨图片身份跟踪。“最近一次检测到杯子”只表示最新观察包含匹配的 `cup/杯子` 标签，不表示它是现实中的同一个杯子。`last-seen` 无匹配时返回 404；`history` 无匹配时返回空列表。
+
+删除时图片先原子移动到待删除文件，数据库提交成功后再清理；数据库失败会恢复图片。如果最终文件清理失败，API 会明确报错，数据库记录已经删除，隐藏的待删除文件需要运维清理。
+
+SQLite 和本地文件系统是比赛 MVP 基础设施。以后可以替换为 PostgreSQL 和对象存储；当前数据量与查询模式不需要向量数据库或图数据库。
+
 ## 前端安装与启动
 
 需要 Node.js 20.19+ 或 22.12+。打开另一个 PowerShell：
@@ -93,4 +125,4 @@ npm run build
 
 ## 当前范围
 
-Day 4 实现真实目标检测和可解释的二维空间关系。数据库持久化、跨图物体跟踪、自然语言查询、VLM/深度估计、Agent 编排、登录和部署属于后续里程碑。
+Day 5/6 实现场景观察持久化和基于标签的最后出现/历史检索。跨图身份跟踪、自然语言 Agent、VLM/深度估计、登录和部署属于后续里程碑。

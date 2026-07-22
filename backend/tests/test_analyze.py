@@ -4,10 +4,11 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from app.dependencies import get_analyzer, get_spatial_reasoner
+from app.dependencies import get_analysis_service
 from app.main import app
 from app.schemas.analyze import DetectedObject
 from app.services.analyzers import AnalysisResult, AnalyzerError, MockSceneAnalyzer
+from app.services.analysis_service import AnalysisService
 from app.services.spatial import SpatialReasoner
 
 client = TestClient(app)
@@ -36,8 +37,9 @@ class FakeAnalyzer:
 
 @pytest.fixture(autouse=True)
 def override_analyzer() -> None:
-    app.dependency_overrides[get_analyzer] = FakeAnalyzer
-    app.dependency_overrides[get_spatial_reasoner] = SpatialReasoner
+    app.dependency_overrides[get_analysis_service] = lambda: AnalysisService(
+        FakeAnalyzer(), SpatialReasoner()
+    )
     yield
     app.dependency_overrides.clear()
 
@@ -102,7 +104,9 @@ def test_analyze_response_includes_geometry_relations() -> None:
                 ],
             )
 
-    app.dependency_overrides[get_analyzer] = PairAnalyzer
+    app.dependency_overrides[get_analysis_service] = lambda: AnalysisService(
+        PairAnalyzer(), SpatialReasoner()
+    )
     response = client.post(
         "/api/v1/analyze",
         files={"image": ("scene.jpg", create_test_image(), "image/jpeg")},
@@ -117,7 +121,9 @@ def test_analyze_response_includes_geometry_relations() -> None:
 
 
 def test_mock_analyzer_uses_shared_spatial_reasoner() -> None:
-    app.dependency_overrides[get_analyzer] = MockSceneAnalyzer
+    app.dependency_overrides[get_analysis_service] = lambda: AnalysisService(
+        MockSceneAnalyzer(), SpatialReasoner()
+    )
     response = client.post(
         "/api/v1/analyze",
         files={"image": ("scene.jpg", create_test_image(), "image/jpeg")},
@@ -146,7 +152,9 @@ def test_analyze_reports_analyzer_failure() -> None:
         def analyze(self, **_: object) -> AnalysisResult:
             raise AnalyzerError("real detector unavailable")
 
-    app.dependency_overrides[get_analyzer] = FailingAnalyzer
+    app.dependency_overrides[get_analysis_service] = lambda: AnalysisService(
+        FailingAnalyzer(), SpatialReasoner()
+    )
     response = client.post(
         "/api/v1/analyze",
         files={"image": ("scene.jpg", create_test_image(), "image/jpeg")},

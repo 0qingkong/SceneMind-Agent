@@ -54,6 +54,13 @@ class Settings:
     spatial_containment_threshold: float = 0.90
     spatial_axis_separation_threshold: float = 0.08
     spatial_max_relations: int = 80
+    database_url: str = "sqlite:///./data/scenemind.db"
+    scene_storage_dir: str = "./data/images"
+    observation_default_limit: int = 20
+    observation_max_limit: int = 100
+    memory_history_default_limit: int = 20
+    memory_history_max_limit: int = 100
+    memory_relation_context_limit: int = 8
 
     def __post_init__(self) -> None:
         if not 0 <= self.yolo_conf <= 1:
@@ -82,6 +89,28 @@ class Settings:
             )
         if self.spatial_max_relations <= 0:
             raise ValueError("SPATIAL_MAX_RELATIONS must be greater than 0")
+        if not self.database_url.strip():
+            raise ValueError("DATABASE_URL must not be empty")
+        if not self.scene_storage_dir.strip():
+            raise ValueError("SCENE_STORAGE_DIR must not be empty")
+        limits = {
+            "OBSERVATION_DEFAULT_LIMIT": self.observation_default_limit,
+            "OBSERVATION_MAX_LIMIT": self.observation_max_limit,
+            "MEMORY_HISTORY_DEFAULT_LIMIT": self.memory_history_default_limit,
+            "MEMORY_HISTORY_MAX_LIMIT": self.memory_history_max_limit,
+            "MEMORY_RELATION_CONTEXT_LIMIT": self.memory_relation_context_limit,
+        }
+        if any(value <= 0 for value in limits.values()):
+            invalid = next(name for name, value in limits.items() if value <= 0)
+            raise ValueError(f"{invalid} must be greater than 0")
+        if self.observation_default_limit > self.observation_max_limit:
+            raise ValueError(
+                "OBSERVATION_DEFAULT_LIMIT must not exceed OBSERVATION_MAX_LIMIT"
+            )
+        if self.memory_history_default_limit > self.memory_history_max_limit:
+            raise ValueError(
+                "MEMORY_HISTORY_DEFAULT_LIMIT must not exceed MEMORY_HISTORY_MAX_LIMIT"
+            )
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str] | None = None) -> Settings:
@@ -109,5 +138,26 @@ class Settings:
             ),
             spatial_max_relations=_read_int(
                 source, "SPATIAL_MAX_RELATIONS", 80
+            ),
+            database_url=source.get(
+                "DATABASE_URL", "sqlite:///./data/scenemind.db"
+            ).strip(),
+            scene_storage_dir=source.get(
+                "SCENE_STORAGE_DIR", "./data/images"
+            ).strip(),
+            observation_default_limit=_read_int(
+                source, "OBSERVATION_DEFAULT_LIMIT", 20
+            ),
+            observation_max_limit=_read_int(
+                source, "OBSERVATION_MAX_LIMIT", 100
+            ),
+            memory_history_default_limit=_read_int(
+                source, "MEMORY_HISTORY_DEFAULT_LIMIT", 20
+            ),
+            memory_history_max_limit=_read_int(
+                source, "MEMORY_HISTORY_MAX_LIMIT", 100
+            ),
+            memory_relation_context_limit=_read_int(
+                source, "MEMORY_RELATION_CONTEXT_LIMIT", 8
             ),
         )

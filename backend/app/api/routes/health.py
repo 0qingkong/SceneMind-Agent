@@ -18,7 +18,7 @@ async def health(
     return {
         "status": "ok",
         "service": "scenemind-agent-api",
-        "version": "0.3.0",
+        "version": "0.6.0",
         "analyzer": analyzer.engine,
         "analyzer_mode": settings.analyzer_mode,
         "model_name": analyzer.model_name,

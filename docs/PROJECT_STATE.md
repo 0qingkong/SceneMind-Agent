@@ -1,6 +1,6 @@
 # SceneMind Agent — Project State
 
-Last updated: 2026-07-21
+Last updated: 2026-07-22
 
 ## Deadline
 
@@ -40,16 +40,22 @@ Competition submission deadline: 2026-08-08.
 - Health reporting for mode, model, load state, and initialized device
 - Unit, route, production-build, and real indoor-image inference verification
 
-## Current milestone
-
 ### Day 4 — Spatial-relation engine
 
-Derive simple spatial relations from detected-object bounding boxes while preserving evidence traceability.
+- Deterministic 2D geometry helpers and relation reasoner
+- Evidence-backed left/right, above/below, near, overlap, and containment relations
+- Shared Mock/YOLO reasoning path
+- Configurable thresholds, deterministic scores, sorting, and output cap
+- Responsive frontend relation presentation
+
+## Current milestone
+
+### Day 5 + Day 6 — Persistent scene memory and retrieval
+
+Implementation is ready for user verification: SQLite observation snapshots, filesystem image storage, memory timeline/detail, label-based last-seen, and paginated history retrieval.
 
 ## Next milestones
 
-- Day 5: scene persistence
-- Day 6: object history and last-seen query
 - Day 7: agent tool orchestration
 - Day 8+: evaluation, UX polish, deployment, submission materials
 
