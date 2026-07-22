@@ -5,7 +5,7 @@
         <span class="brand-mark">S</span>
         <span><strong>SceneMind</strong><small>Spatial Memory Agent</small></span>
       </RouterLink>
-      <span class="version-chip">v0.3</span>
+      <span class="version-chip">v0.4</span>
     </header>
 
     <main class="page-container">

@@ -1,12 +1,13 @@
 # SceneMind Agent
 
-SceneMind Agent 是一个面向移动端的多模态空间记忆产品。当前 Day 3 版本可上传场景图片，使用 Ultralytics YOLO 进行真实物体检测，并在前端展示归一化边界框、中文标签和基于检测计数生成的场景摘要。
+SceneMind Agent 是一个面向移动端的多模态空间记忆产品。当前 Day 4 版本可上传场景图片，使用 Ultralytics YOLO 进行真实物体检测，并通过可解释的二维几何规则推导空间关系。
 
 ## 技术栈
 
 - 前端：Vue 3、TypeScript、Vite、Vue Router
 - 后端：FastAPI、Pydantic、Pillow
 - 检测器：Ultralytics YOLO（默认 `yolo26n.pt`）
+- 空间推理：确定性归一化边界框几何规则
 - API 前缀：`/api/v1`
 
 ## 后端安装与启动
@@ -51,6 +52,23 @@ $env:ANALYZER_MODE = "mock"
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
+## 空间推理配置
+
+空间推理独立于检测器，因此 Mock 和 YOLO 使用完全相同的关系规则。
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `SPATIAL_ENABLED` | `true` | 设为 `false` 时保留检测结果并返回空关系列表 |
+| `SPATIAL_NEAR_THRESHOLD` | `0.25` | 归一化图像平面中的中心点距离阈值 |
+| `SPATIAL_OVERLAP_IOU_THRESHOLD` | `0.05` | 生成重叠关系的最小 IoU |
+| `SPATIAL_CONTAINMENT_THRESHOLD` | `0.90` | 内框与外框相交面积占内框面积的最小比例 |
+| `SPATIAL_AXIS_SEPARATION_THRESHOLD` | `0.08` | 水平或垂直中心分离的最小阈值 |
+| `SPATIAL_MAX_RELATIONS` | `80` | 确定性排序后保留的最大关系数量 |
+
+支持的谓词为 `left_of`、`right_of`、`above`、`below`、`near`、`overlaps`、`inside` 和 `contains`。关系分数是“较低检测置信度 × 几何强度”：轴向关系使用中心分离量，靠近使用阈值内的反向距离，重叠使用 IoU，包含使用内框覆盖比例。它不是学习模型概率。
+
+这些关系只描述二维图像平面，不能证明物理支撑、真实深度或厘米距离，因此不会生成 `on`、`in_front_of`、`behind` 等谓词。
+
 ## 前端安装与启动
 
 需要 Node.js 20.19+ 或 22.12+。打开另一个 PowerShell：
@@ -61,7 +79,7 @@ npm install
 npm run dev
 ```
 
-打开 http://localhost:5173，进入场景分析页，选择 JPG、PNG 或 WebP 图片后开始分析。前端使用 API 返回的 `[x1, y1, x2, y2]` 归一化坐标绘制边界框。
+打开 http://localhost:5173，进入场景分析页，选择 JPG、PNG 或 WebP 图片后开始分析。前端使用 API 返回的 `[x1, y1, x2, y2]` 归一化坐标绘制边界框，并以中文展示二维关系和几何强度。
 
 ## 检查
 
@@ -75,4 +93,4 @@ npm run build
 
 ## 当前范围
 
-Day 3 只实现真实目标检测。空间关系、数据库持久化、物体跟踪、VLM、Agent 编排、登录和部署属于后续里程碑。
+Day 4 实现真实目标检测和可解释的二维空间关系。数据库持久化、跨图物体跟踪、自然语言查询、VLM/深度估计、Agent 编排、登录和部署属于后续里程碑。
