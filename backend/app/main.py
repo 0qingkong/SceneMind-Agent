@@ -1,13 +1,24 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.analyze import router as analyze_router
 from app.api.routes.health import router as health_router
+from app.api.routes.observations import router as observations_router
+from app.dependencies import database
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    database.create_tables()
+    yield
 
 app = FastAPI(
     title="SceneMind Agent API",
-    version="0.4.0",
+    version="0.6.0",
     description="SceneMind Agent 多模态空间记忆服务。",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -20,13 +31,14 @@ app.add_middleware(
 
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(analyze_router, prefix="/api/v1")
+app.include_router(observations_router, prefix="/api/v1")
 
 
 @app.get("/")
 async def root() -> dict[str, str]:
     return {
         "name": "SceneMind Agent API",
-        "version": "0.4.0",
+        "version": "0.6.0",
         "docs": "/docs",
         "health": "/api/v1/health",
     }

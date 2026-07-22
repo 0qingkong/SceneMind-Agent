@@ -43,3 +43,37 @@ export interface AnalyzeResponse {
   relations: DetectedRelation[]
   latency_ms: number
 }
+
+export interface ObservedObject extends DetectedObject {
+  sort_order: number
+}
+
+export interface ObservationSummary {
+  id: string
+  title: string | null
+  location: string | null
+  created_at: string
+  image_url: string
+  detail_url: string
+  engine: string
+  summary: string
+  object_count: number
+  relation_count: number
+  labels: string[]
+}
+
+export interface ObservationDetail extends ObservationSummary {
+  original_filename: string
+  mime_type: string
+  image_width: number
+  image_height: number
+  objects: ObservedObject[]
+  relations: DetectedRelation[]
+}
+
+export interface ObservationListResponse {
+  items: ObservationSummary[]
+  total: number
+  limit: number
+  offset: number
+}

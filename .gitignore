@@ -29,6 +29,12 @@ backend/uploads/*
 backend/models/
 runs/
 
+# Local scene-memory runtime data
+backend/data/
+*.db
+*.sqlite
+*.sqlite3
+
 # Logs
 *.log
 
