@@ -42,6 +42,7 @@ def _read_bool(source: Mapping[str, str], name: str, default: bool) -> bool:
 
 @dataclass(frozen=True, slots=True)
 class Settings:
+    allowed_origins: tuple[str, ...] = ("http://localhost:5173", "http://127.0.0.1:5173")
     analyzer_mode: str = "yolo"
     yolo_model: str = "yolo26n.pt"
     yolo_conf: float = 0.30
@@ -64,6 +65,12 @@ class Settings:
     agent_default_limit: int = 3
     agent_max_limit: int = 20
     demo_mode: bool = False
+    capture_default_interval_seconds: int = 5
+    capture_min_interval_seconds: int = 3
+    capture_max_interval_seconds: int = 60
+    capture_min_save_gap_seconds: int = 15
+    capture_object_count_delta: int = 2
+    capture_max_session_minutes: int = 60
 
     def __post_init__(self) -> None:
         if not 0 <= self.yolo_conf <= 1:
@@ -74,6 +81,8 @@ class Settings:
             raise ValueError("YOLO_MAX_DET must be greater than 0")
         if not self.yolo_model.strip():
             raise ValueError("YOLO_MODEL must not be empty")
+        if not self.allowed_origins:
+            raise ValueError("ALLOWED_ORIGINS must contain at least one origin")
         if not self.yolo_device.strip():
             raise ValueError("YOLO_DEVICE must not be empty")
         if not 0 < self.spatial_near_threshold <= 1:
@@ -104,6 +113,12 @@ class Settings:
             "MEMORY_RELATION_CONTEXT_LIMIT": self.memory_relation_context_limit,
             "AGENT_DEFAULT_LIMIT": self.agent_default_limit,
             "AGENT_MAX_LIMIT": self.agent_max_limit,
+            "CAPTURE_DEFAULT_INTERVAL_SECONDS": self.capture_default_interval_seconds,
+            "CAPTURE_MIN_INTERVAL_SECONDS": self.capture_min_interval_seconds,
+            "CAPTURE_MAX_INTERVAL_SECONDS": self.capture_max_interval_seconds,
+            "CAPTURE_MIN_SAVE_GAP_SECONDS": self.capture_min_save_gap_seconds,
+            "CAPTURE_OBJECT_COUNT_DELTA": self.capture_object_count_delta,
+            "CAPTURE_MAX_SESSION_MINUTES": self.capture_max_session_minutes,
         }
         if any(value <= 0 for value in limits.values()):
             invalid = next(name for name, value in limits.items() if value <= 0)
@@ -118,11 +133,23 @@ class Settings:
             )
         if self.agent_default_limit > self.agent_max_limit:
             raise ValueError("AGENT_DEFAULT_LIMIT must not exceed AGENT_MAX_LIMIT")
+        if self.capture_min_interval_seconds > self.capture_max_interval_seconds:
+            raise ValueError("CAPTURE_MIN_INTERVAL_SECONDS must not exceed CAPTURE_MAX_INTERVAL_SECONDS")
+        if not self.capture_min_interval_seconds <= self.capture_default_interval_seconds <= self.capture_max_interval_seconds:
+            raise ValueError("CAPTURE_DEFAULT_INTERVAL_SECONDS must be within the configured range")
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str] | None = None) -> Settings:
         source = os.environ if environ is None else environ
         return cls(
+            allowed_origins=tuple(
+                item.strip()
+                for item in source.get(
+                    "ALLOWED_ORIGINS",
+                    "http://localhost:5173,http://127.0.0.1:5173",
+                ).split(",")
+                if item.strip()
+            ),
             analyzer_mode=source.get("ANALYZER_MODE", "yolo").strip().lower() or "yolo",
             yolo_model=source.get("YOLO_MODEL", "yolo26n.pt").strip()
             or "yolo26n.pt",
@@ -170,4 +197,10 @@ class Settings:
             agent_default_limit=_read_int(source, "AGENT_DEFAULT_LIMIT", 3),
             agent_max_limit=_read_int(source, "AGENT_MAX_LIMIT", 20),
             demo_mode=_read_bool(source, "DEMO_MODE", False),
+            capture_default_interval_seconds=_read_int(source, "CAPTURE_DEFAULT_INTERVAL_SECONDS", 5),
+            capture_min_interval_seconds=_read_int(source, "CAPTURE_MIN_INTERVAL_SECONDS", 3),
+            capture_max_interval_seconds=_read_int(source, "CAPTURE_MAX_INTERVAL_SECONDS", 60),
+            capture_min_save_gap_seconds=_read_int(source, "CAPTURE_MIN_SAVE_GAP_SECONDS", 15),
+            capture_object_count_delta=_read_int(source, "CAPTURE_OBJECT_COUNT_DELTA", 2),
+            capture_max_session_minutes=_read_int(source, "CAPTURE_MAX_SESSION_MINUTES", 60),
         )

@@ -77,3 +77,27 @@ Status: accepted
 Decision: `DEMO_MODE` defaults off. When enabled, code-generated permitted scenes use fixed IDs, an `[演示]` title prefix and the `demo-seed` engine marker. Seeding skips every existing ID, and reset selects only the engine marker.
 
 Reason: a reliable fallback should be reproducible and visibly distinct from real inference. Fixed IDs provide idempotence; engine-scoped reset prevents deletion of user data. No generated observation is represented as a real YOLO result.
+
+## ADR-011 — Still-frame browser capture abstraction
+
+Status: accepted
+
+Decision: upload, browser camera and the glasses simulator implement a shared frontend `CaptureSource`. Browser capture never requests audio and submits compressed still frames only. All MediaStream tracks belong to the source and are stopped on disconnect, error or component unmount.
+
+Reason: the analysis API already accepts images. Reusing it avoids a video pipeline, prevents accidental 30 FPS inference and keeps evidence snapshots inspectable.
+
+## ADR-012 — Foreground sequential capture sessions
+
+Status: accepted
+
+Decision: continuous observation uses one awaited loop and a backend per-session non-overlap lock. Save decisions are deterministic and session counters plus optional observations commit together. Hidden pages pause by default and Wake Lock is best-effort.
+
+Reason: browser background execution and camera availability are not reliable. Low-frequency foreground sampling is sufficient for the competition scenario and provides observable resource cleanup.
+
+## ADR-013 — Local privacy preferences and metadata export
+
+Status: accepted
+
+Decision: non-sensitive UI preferences use versioned localStorage. JSON export is generated from API schemas and excludes image bytes and server paths. Retention-based automatic deletion remains explicitly planned rather than implied.
+
+Reason: preferences do not justify a backend account/settings system. Avoiding unsupported encryption, blur and retention claims preserves product truthfulness.

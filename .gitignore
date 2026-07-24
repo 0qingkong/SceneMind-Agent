@@ -18,6 +18,7 @@ venv/
 # Frontend
 frontend/node_modules/
 frontend/dist/
+frontend/.test-dist/
 frontend/.vite/
 
 # Uploaded runtime files

@@ -7,6 +7,7 @@
       为物品追踪与未来的 AI 眼镜提供空间智能基础。
     </p>
     <div class="hero-actions">
+      <RouterLink class="primary-link" to="/live">开启实时镜头</RouterLink>
       <RouterLink class="primary-link" to="/analyze">分析第一张图片</RouterLink>
       <RouterLink class="secondary-link" to="/memory">查看空间记忆</RouterLink>
       <RouterLink class="secondary-link" to="/agent">询问记忆 Agent</RouterLink>

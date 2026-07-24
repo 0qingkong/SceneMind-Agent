@@ -18,7 +18,7 @@ def test_health() -> None:
         assert response.status_code == 200
         payload = response.json()
         assert payload["status"] == "ok"
-        assert payload["version"] == "0.8.0"
+        assert payload["version"] == "0.12.0"
         assert payload["analyzer_mode"] == "yolo"
         assert payload["model_name"] == "yolo26n.pt"
         assert payload["model_loaded"] is False

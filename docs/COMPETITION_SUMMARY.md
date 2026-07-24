@@ -11,6 +11,7 @@ People often remember that an item was visible but not where or when they last s
 3. One observation saves the image, objects, relations, location and timestamp.
 4. Memory retrieves last-seen and history results by category.
 5. A focused natural-language Agent selects read-only tools and returns the original image evidence.
+6. Browser cameras can contribute compressed still frames and persistent low-frequency observation sessions without recording audio or streaming video.
 
 ## Why it is credible
 
@@ -20,10 +21,11 @@ People often remember that an item was visible but not where or when they last s
 - Answers expose tool traces, evidence links and truthful limitations.
 - Evaluation distinguishes measured, partial and not-run metrics.
 - Demo data is generated, visibly marked, idempotent and independently removable.
+- Device and insight pages use persisted source/session data, while browser connection state remains explicitly ephemeral.
 
 ## Deliberate limits
 
-SceneMind does not perform face recognition, physical-instance tracking across images, metric depth estimation, open-domain chat, custom training or hardware ingestion. A category match is not proof that two pictures contain the same physical item. Image-plane relations are not physical distance or depth.
+SceneMind does not perform face recognition, physical-instance tracking across images, metric depth estimation, open-domain chat, custom training or real commercial glasses integration. The browser glasses page is a labeled simulator. It does not capture audio or promise background execution, encryption, face blur, or cloud isolation. A category match is not proof that two pictures contain the same physical item. Image-plane relations are not physical distance or depth.
 
 ## Stack
 

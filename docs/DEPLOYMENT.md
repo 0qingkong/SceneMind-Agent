@@ -22,6 +22,12 @@ $env:DEMO_MODE="false"
 
 For development, run `npm run dev` in `frontend`. For a packaged demo, serve `frontend/dist` with a static server and set `VITE_API_BASE_URL` before building if the API origin differs.
 
+## Camera access from a physical phone
+
+Browser camera APIs require a secure context. A phone browsing `http://<computer-lan-ip>:5173` is normally not secure even though desktop `localhost` works. Put the frontend and API behind a trusted HTTPS reverse proxy/development certificate, configure `VITE_API_BASE_URL` to the HTTPS API origin, and add that frontend origin to backend CORS before the phone acceptance test. Do not bypass certificate warnings for a competition demo.
+
+SceneMind has no camera Service Worker or background recorder. Keep the capture page visible; the application pauses hidden continuous sessions by default and treats Wake Lock as best-effort.
+
 ## Persistent data
 
 Back up both the SQLite file and `SCENE_STORAGE_DIR`; either one alone is incomplete. Stop writes while taking a simple filesystem copy. Never commit the database, uploads or YOLO weights.

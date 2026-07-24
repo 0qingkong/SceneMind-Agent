@@ -25,7 +25,7 @@ function formattedTime(value: string) {
       <div class="observation-labels">
         <span v-for="label in observation.labels.slice(0, 5)" :key="label">{{ label }}</span>
       </div>
-      <small>{{ observation.object_count }} 个物体 · {{ observation.relation_count }} 条关系</small>
+      <small>{{ observation.object_count }} 个物体 · {{ observation.relation_count }} 条关系 · {{ observation.source_device_name || observation.source_type || 'upload' }}</small>
     </div>
   </RouterLink>
 </template>
