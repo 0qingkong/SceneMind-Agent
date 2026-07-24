@@ -90,6 +90,8 @@ def test_create_retrieve_list_and_delete_observation(observation_client) -> None
     assert payload["relations"]
     assert payload["created_at"].endswith(("Z", "+00:00"))
     assert payload["image_url"] == f"/api/v1/observations/{observation_id}/image"
+    assert payload["source_type"] == "upload"
+    assert payload["session_id"] is None
     assert str(storage.root) not in str(payload)
     assert all(
         relation["subject_id"] in {"object-1", "object-2"}

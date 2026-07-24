@@ -11,6 +11,8 @@ from app.core.config import Settings
 from app.db import Database
 from app.services.analyzers import SceneAnalyzer, create_analyzer
 from app.services.analysis_service import AnalysisService
+from app.services.capture_session_service import CaptureSessionService
+from app.services.dashboard_service import DashboardService
 from app.services.image_storage import ImageStorage
 from app.services.memory_service import MemoryService
 from app.services.observation_service import ObservationService
@@ -76,3 +78,18 @@ def get_agent_executor(
         max_limit=configured_settings.agent_max_limit,
     )
     return AgentExecutor(planner, AgentTools(memory, configured_settings))
+
+
+def get_capture_session_service(
+    session: Annotated[Session, Depends(get_db_session)],
+    service: Annotated[AnalysisService, Depends(get_analysis_service)],
+    storage: Annotated[ImageStorage, Depends(get_image_storage)],
+    configured_settings: Annotated[Settings, Depends(get_settings)],
+) -> CaptureSessionService:
+    return CaptureSessionService(session, service, storage, configured_settings)
+
+
+def get_dashboard_service(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> DashboardService:
+    return DashboardService(session)

@@ -13,6 +13,9 @@ Vue /memory <──JSON/image── ObservationService ──> SQLite + image st
                                             │
 Vue /agent  <──evidence──── AgentExecutor ──> MemoryService / repository
                          planner -> tools -> formatter
+Vue /live ──compressed still frames──> AnalysisService / ObservationService
+Vue /sessions ──sequential samples──> CaptureSessionService ──> policy + observations
+Vue /devices + /insights ──JSON──> DashboardService ──> SQL aggregation
 ```
 
 ## Backend boundaries
@@ -24,10 +27,20 @@ Vue /agent  <──evidence──── AgentExecutor ──> MemoryService / re
 - `MemoryService`: newest-first category retrieval with stable repeated-object numbering.
 - `agent`: deterministic intent plan, read-only structured tools, grounded formatter and response schemas. It is not open-domain chat.
 - `DemoDataService`: optional generated sample observations marked by `engine=demo-seed`; fixed IDs make seeding idempotent.
+- `CaptureSessionService`: persistent lifecycle, per-session non-overlap lock, one inference per sample, save policy and transactional counters.
+- `DashboardService`: device activity, insight aggregation and path-free JSON metadata export.
+
+## Shared capture sources
+
+The frontend `CaptureSource` contract exposes `connect`, `disconnect`, `captureFrame`, `listDevices` and `switchDevice`. Browser camera constraints always set `audio: false`. A source owns at most one stream, shares an in-flight connection promise, and stops every track on disconnect/error/unmount. Canvas capture scales the current frame to a configurable maximum width and emits a compressed image; the backend never receives the continuous video stream.
+
+There is no PWA Service Worker camera path. Continuous capture is a foreground, low-frequency awaited loop. Visibility pause and Wake Lock handling improve demo reliability without claiming background execution.
 
 ## Data model
 
 An `Observation` owns `ObservedObject` and `ObservedRelation` rows with delete cascades. Object and relation IDs are scoped to one observation. Bounding boxes stay normalized as `[x1, y1, x2, y2]`. Image paths stored in SQLite are relative to `SCENE_STORAGE_DIR`.
+
+Optional Observation source fields record source type, browser device identifiers/names, capture time and capture-session ID. `CaptureSession` stores lifecycle state, interval, target state, counters, previous label multiset and last save/sample timestamps. Deleting a stopped session detaches its observations rather than deleting memory evidence.
 
 The API derives `is_demo` from the trusted engine marker rather than requiring a schema migration. Demo reset selects only that marker and leaves all real-engine rows untouched.
 
@@ -52,3 +65,4 @@ Supported intents are `last_seen`, `history`, `recent_observations`, `observatio
 - Delete stages the image, commits the DB delete, then finalizes file cleanup.
 - Storage path resolution rejects traversal and API schemas omit absolute paths.
 - Tests use fake inference and temporary databases/storage; real YOLO has a separate manual smoke procedure.
+- Existing SQLite databases receive only additive nullable Observation columns during startup; new session tables are created normally.

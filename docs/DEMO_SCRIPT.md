@@ -15,6 +15,17 @@ Use an image you own or have permission to demonstrate, ideally a desk or classr
 7. **Ask Agent (45 seconds).** Ask “我的杯子最后出现在哪里？” and point out the intent, grounded answer, limitation text and image evidence.
 8. **Open evidence (20 seconds).** Select “打开原始证据” to return to the exact stored observation.
 
+## Optional multi-device extension
+
+1. Open `/live`, explicitly allow the desktop webcam, and show the visible camera indicator.
+2. Grab one analysis-only frame, then one “分析并记忆” frame; return to live preview.
+3. Create a `/sessions` observation with a 5-second interval and a target such as 杯子. Show at least one saved and one skipped sample, then introduce the target and show the target-found event.
+4. Stop the session and confirm the camera indicator turns off.
+5. Open `/devices`, `/insights`, and the clearly labeled `/glasses` simulator.
+6. On a physical phone, repeat `/live` through trusted HTTPS and switch front/rear cameras when the browser exposes both devices.
+
+If the phone or browser denies permission, show the recovery error and browser site-permission control; do not claim that camera access succeeded. The simulator is never presented as a real glasses connection.
+
 ## Recommended additional questions
 
 - `最近在哪些场景里见过人物？`

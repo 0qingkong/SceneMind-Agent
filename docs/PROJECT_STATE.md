@@ -55,17 +55,23 @@ Competition submission deadline: 2026-08-08.
 - Memory timeline, detail, delete, last-seen and paginated history
 - Stable repeated-object numbering and label-based retrieval limitations
 
-## Current milestone
-
 ### Day 7 + Day 8 — Grounded Agent and competition package
 
-Implementation is ready for user verification: deterministic agent intents and tools, evidence-first `/agent`, explicit limitations, demo seeding/reset, evaluation/report tooling, fake-inference end-to-end smoke coverage, product polish, and competition documentation.
+- Deterministic memory-agent intents, read-only tools and evidence cards
+- Explicit Demo Mode, evaluation tooling and competition documentation
+
+## Current milestone
+
+### Day 9–12 — Multi-device capture and continuous spatial observation
+
+Implementation is ready for user verification: typed browser capture sources, `/live`, persistent low-frequency capture sessions, device statistics, AI Glasses Simulator, memory insights, privacy preferences, JSON export, navigation and automated test code.
 
 ## Next milestones
 
 - Run required backend/frontend checks and manual real-YOLO acceptance.
 - Record real-image evaluation results without claiming unmeasured metrics.
-- Merge the Day 7/8 feature branch and rehearse the competition demo.
+- Merge Day 7/8 first, then the Day 9–12 feature branch.
+- Manually verify desktop webcam and a physical phone through trusted HTTPS.
 
 ## Product constraints
 

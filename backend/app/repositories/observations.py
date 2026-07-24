@@ -34,6 +34,11 @@ def observation_summary(model: Observation) -> ObservationSummary:
         relation_count=model.relation_count,
         labels=labels,
         is_demo=model.engine == "demo-seed",
+        source_type=model.source_type,
+        source_device_id=model.source_device_id,
+        source_device_name=model.source_device_name,
+        captured_at=_utc(model.captured_at) if model.captured_at else None,
+        session_id=model.session_id,
     )
 
 
@@ -94,6 +99,11 @@ class ObservationRepository:
         image_path: str,
         mime_type: str,
         analysis: AnalyzeResponse,
+        source_type: str | None = None,
+        source_device_id: str | None = None,
+        source_device_name: str | None = None,
+        captured_at: datetime | None = None,
+        session_id: str | None = None,
     ) -> Observation:
         object_ids = {item.id for item in analysis.objects}
         if len(object_ids) != len(analysis.objects):
@@ -118,6 +128,11 @@ class ObservationRepository:
             summary=analysis.scene_summary,
             object_count=len(analysis.objects),
             relation_count=len(analysis.relations),
+            source_type=source_type,
+            source_device_id=source_device_id,
+            source_device_name=source_device_name,
+            captured_at=captured_at,
+            session_id=session_id,
             objects=[
                 ObservedObject(
                     id=item.id,
@@ -169,6 +184,7 @@ class ObservationRepository:
         offset: int,
         label: str | None = None,
         query: str | None = None,
+        session_id: str | None = None,
     ) -> tuple[list[Observation], int]:
         statement = select(Observation)
         if label:
@@ -191,6 +207,8 @@ class ObservationRepository:
                     ),
                 )
             )
+        if session_id:
+            statement = statement.where(Observation.session_id == session_id)
         total = self.session.scalar(
             select(func.count()).select_from(statement.order_by(None).subquery())
         ) or 0

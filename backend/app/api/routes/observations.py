@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
@@ -41,6 +42,11 @@ async def create_observation(
     file: UploadFile = File(...),
     title: str | None = Form(default=None),
     location: str | None = Form(default=None),
+    source_type: str | None = Form(default="upload"),
+    source_device_id: str | None = Form(default=None),
+    source_device_name: str | None = Form(default=None),
+    captured_at: datetime | None = Form(default=None),
+    session_id: str | None = Form(default=None),
 ) -> ObservationDetail:
     content = await file.read()
     try:
@@ -51,6 +57,11 @@ async def create_observation(
             content_type=file.content_type,
             title=title,
             location=location,
+            source_type=source_type,
+            source_device_id=source_device_id,
+            source_device_name=source_device_name,
+            captured_at=captured_at,
+            session_id=session_id,
         )
     except Exception as exc:
         _raise_http_error(exc)
@@ -65,6 +76,7 @@ def list_observations(
     offset: int = Query(default=0, ge=0),
     label: str | None = Query(default=None),
     q: str | None = Query(default=None),
+    session_id: str | None = Query(default=None),
 ) -> ObservationListResponse:
     resolved_limit = limit or settings.observation_default_limit
     if resolved_limit > settings.observation_max_limit:
@@ -77,6 +89,7 @@ def list_observations(
         offset=offset,
         label=label,
         query=q,
+        session_id=session_id,
     )
 
 

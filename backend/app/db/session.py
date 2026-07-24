@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from pathlib import Path
 
-from sqlalchemy import Engine, create_engine, event
+from sqlalchemy import Engine, create_engine, event, inspect, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -40,6 +40,32 @@ class Database:
                 parents=True, exist_ok=True
             )
         Base.metadata.create_all(self.engine)
+        if parsed_url.get_backend_name() == "sqlite":
+            self._ensure_sqlite_observation_columns()
+
+    def _ensure_sqlite_observation_columns(self) -> None:
+        """Apply the additive Day 9 observation metadata migration to old MVP DBs."""
+
+        existing = {item["name"] for item in inspect(self.engine).get_columns("observations")}
+        additions = {
+            "source_type": "VARCHAR(50)",
+            "source_device_id": "VARCHAR(255)",
+            "source_device_name": "VARCHAR(255)",
+            "captured_at": "DATETIME",
+            "session_id": "VARCHAR(36)",
+        }
+        with self.engine.begin() as connection:
+            for name, sql_type in additions.items():
+                if name not in existing:
+                    connection.execute(
+                        text(f"ALTER TABLE observations ADD COLUMN {name} {sql_type}")
+                    )
+            connection.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS ix_observations_session_id "
+                    "ON observations (session_id)"
+                )
+            )
 
     def sessions(self) -> Iterator[Session]:
         with self.session_factory() as session:

@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from sqlalchemy import (
+    Boolean,
     DateTime,
     Float,
     ForeignKey,
@@ -34,6 +35,15 @@ class Observation(Base):
     summary: Mapped[str] = mapped_column(Text)
     object_count: Mapped[int] = mapped_column(Integer)
     relation_count: Mapped[int] = mapped_column(Integer)
+    source_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    source_device_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    source_device_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    captured_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    session_id: Mapped[str | None] = mapped_column(
+        ForeignKey("capture_sessions.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
 
     objects: Mapped[list[ObservedObject]] = relationship(
         back_populates="observation",
@@ -43,6 +53,38 @@ class Observation(Base):
     relations: Mapped[list[ObservedRelation]] = relationship(
         back_populates="observation",
         cascade="all, delete-orphan",
+    )
+    capture_session: Mapped[CaptureSession | None] = relationship(
+        back_populates="observations"
+    )
+
+
+class CaptureSession(Base):
+    __tablename__ = "capture_sessions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    title: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    location: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    source_type: Mapped[str] = mapped_column(String(50), index=True)
+    device_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), index=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    sample_interval_seconds: Mapped[int] = mapped_column(Integer)
+    sampled_frames: Mapped[int] = mapped_column(Integer, default=0)
+    analyzed_frames: Mapped[int] = mapped_column(Integer, default=0)
+    saved_observations: Mapped[int] = mapped_column(Integer, default=0)
+    target_query: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    auto_save_mode: Mapped[str] = mapped_column(String(30), default="meaningful-change")
+    last_labels_json: Mapped[str] = mapped_column(Text, default="[]")
+    target_seen: Mapped[bool] = mapped_column(Boolean, default=False)
+    last_sampled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_saved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    observations: Mapped[list[Observation]] = relationship(
+        back_populates="capture_session",
+        passive_deletes=True,
     )
 
 

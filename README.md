@@ -1,6 +1,6 @@
 # SceneMind Agent
 
-SceneMind Agent 是一个面向移动端的多模态空间记忆产品。当前 Day 7/8 实现可检测场景物体、推导二维空间关系、持久化场景观察，并通过受约束的自然语言 Agent 返回可打开的图片证据。
+SceneMind Agent 是一个面向移动端的多模态空间记忆产品。当前 Day 9–12 实现支持图片上传、浏览器实时镜头、低频观察会话、来源设备统计、记忆洞察，以及通过受约束 Agent 返回可打开的图片证据。
 
 ## 技术栈
 
@@ -10,6 +10,8 @@ SceneMind Agent 是一个面向移动端的多模态空间记忆产品。当前 
 - 空间推理：确定性归一化边界框几何规则
 - 场景记忆：SQLite 元数据 + 本地文件系统图片
 - 记忆 Agent：确定性意图规划 + 只读工具 + 证据约束回答
+- 多来源采集：上传、浏览器摄像头、明确标记的 AI Glasses Simulator
+- 连续观察：前台低频顺序采样，不传输连续视频或音频
 - API 前缀：`/api/v1`
 
 ## 后端安装与启动
@@ -33,6 +35,10 @@ cd backend
 - 最近出现：`GET /api/v1/memory/last-seen?q=杯子`
 - 历史记录：`GET /api/v1/memory/history?q=cup`
 - 记忆 Agent：`POST /api/v1/agent/query`
+- 观察会话：`/api/v1/capture-sessions`
+- 设备统计：`GET /api/v1/devices/stats`
+- 记忆洞察：`GET /api/v1/insights`
+- JSON 导出：`GET /api/v1/privacy/export`
 
 首次执行真实推理时，Ultralytics 可能联网下载 `yolo26n.pt` 权重，因此第一次请求会明显更慢。权重、`runs/` 和上传图片已被 Git 忽略，不应提交。
 
@@ -91,6 +97,12 @@ $env:ANALYZER_MODE = "mock"
 | `AGENT_DEFAULT_LIMIT` | `3` | Agent 列表类查询的默认结果数 |
 | `AGENT_MAX_LIMIT` | `20` | Agent 单次查询允许的最大结果数 |
 | `DEMO_MODE` | `false` | 启动时幂等添加带明显标记的生成式演示观察 |
+| `CAPTURE_DEFAULT_INTERVAL_SECONDS` | `5` | 新会话默认采样间隔 |
+| `CAPTURE_MIN_INTERVAL_SECONDS` | `3` | 最小采样间隔 |
+| `CAPTURE_MAX_INTERVAL_SECONDS` | `60` | 最大采样间隔 |
+| `CAPTURE_MIN_SAVE_GAP_SECONDS` | `15` | 无其他变化时允许周期保存的最小间隔 |
+| `CAPTURE_OBJECT_COUNT_DELTA` | `2` | 触发保存的物体数量差 |
+| `CAPTURE_MAX_SESSION_MINUTES` | `60` | 单会话最大持续时间 |
 
 观察 API：
 
@@ -157,6 +169,30 @@ npm run dev
 
 打开 http://localhost:5173，进入场景分析页，选择 JPG、PNG 或 WebP 图片后开始分析。前端使用 API 返回的 `[x1, y1, x2, y2]` 归一化坐标绘制边界框，并以中文展示二维关系和几何强度。
 
+实时镜头位于 `/live`。摄像头权限只能在用户明确点击后请求，约束始终为 `audio: false`。构建期压缩配置：
+
+| 变量 | 默认值 |
+| --- | --- |
+| `VITE_CAPTURE_IMAGE_TYPE` | `image/jpeg` |
+| `VITE_CAPTURE_JPEG_QUALITY` | `0.88` |
+| `VITE_CAPTURE_MAX_WIDTH` | `1600` |
+
+手机摄像头通常要求受信任 HTTPS。`http://localhost` 只适用于运行浏览器的本机；物理手机访问电脑局域网 IP 时应使用受信任的 HTTPS 反向代理或开发证书。浏览器拒绝权限、设备占用或不安全上下文时页面会显示明确错误。
+
+## 低频观察会话
+
+`/sessions` 创建持久化会话，`/sessions/{id}` 明确连接摄像头并使用单一 awaited loop 顺序采样。页面隐藏时默认暂停；停止或离开页面会释放全部 MediaStream track 和 Screen Wake Lock。浏览器可能冻结后台标签页，因此产品不承诺后台持续采集。
+
+`meaningful-change` 策略在首个有效样本、目标首次出现、标签多重集合变化、显著物体数量变化、最小保存间隔到达或用户强制保存时保存观察。`manual` 只响应强制保存，`every-analyzed-sample` 保存每个成功分析样本。检测器每个样本只调用一次。
+
+## 设备、模拟器、洞察与隐私
+
+- `/devices` 合并当前浏览器实际枚举的摄像头与后端持久化来源统计，不声称刷新后仍连接。
+- `/glasses` 明确标记为 **AI Glasses Simulator / 未来设备交互预览**，不包含厂商 SDK，也不代表真实眼镜连接。
+- `/insights` 使用 SQL 聚合真实 Observation/CaptureSession 数据；空数据库显示真实空状态。
+- `/privacy` 将非敏感 UI 偏好保存在 localStorage，并支持暂停前端连续采集及 JSON 元数据导出。
+- 保留天数自动清理、加密和人脸模糊均未实现；相关界面不会声称已经生效。
+
 ## 检查
 
 ```powershell
@@ -165,8 +201,9 @@ cd backend
 
 cd ..\frontend
 npm run build
+npm run test:capture
 ```
 
 ## 当前范围
 
-Day 7/8 完成受约束的证据型记忆 Agent、演示模式、端到端 smoke 测试、评估工具和竞赛文档。跨图身份跟踪、开放领域聊天、VLM/深度估计、登录和分布式部署不属于本次 MVP。
+Day 9–12 增加浏览器摄像头、多来源低频会话、设备中心、明确标记的眼镜模拟器、真实数据洞察和本地隐私偏好。真实商业眼镜集成、后台 Service Worker 摄像头、麦克风录制、跨图身份跟踪、开放领域聊天、深度估计、加密和人脸模糊不属于本次 MVP。
