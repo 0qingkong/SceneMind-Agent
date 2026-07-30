@@ -43,6 +43,9 @@ try {
         Add-E2eResult "backend_tests" ($LASTEXITCODE -eq 0) "pytest suite"
     } finally { Pop-Location }
 
+    & (Join-Path $PSScriptRoot "data-integrity-test.ps1") -Json | Set-Content -LiteralPath (Join-Path $resultRoot "integrity.json") -Encoding UTF8
+    Add-E2eResult "data_integrity" ($LASTEXITCODE -eq 0) "isolated database validation"
+
     if (-not $SkipBrowser) {
         $backendPort = 18000
         $frontendPort = 15173

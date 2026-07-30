@@ -167,6 +167,7 @@ function Stop-SceneMindManagedProcess {
     }
 
     $rootPid = [int]$metadata.pid
+    $descendants = @(Get-SceneMindDescendantPids $rootPid)
 
     # Start-Process may return an npm/cmd wrapper whose children keep Vite's
     # native modules open after the wrapper exits. taskkill /T is scoped to the
@@ -175,12 +176,22 @@ function Stop-SceneMindManagedProcess {
     if ($env:OS -eq "Windows_NT") {
         $arguments = @("/PID", [string]$rootPid, "/T")
         if ($Force) { $arguments += "/F" }
-        & taskkill.exe @arguments 2>$null | Out-Null
-        if ((Get-Process -Id $rootPid -ErrorAction SilentlyContinue) -and -not $Force) {
-            & taskkill.exe /PID $rootPid /T /F 2>$null | Out-Null
+        $savedErrorAction = $ErrorActionPreference
+        try {
+            # Native stderr must not abort cleanup before the forced fallback
+            # and PID metadata removal have run.
+            $ErrorActionPreference = "SilentlyContinue"
+            & taskkill.exe @arguments 2>$null | Out-Null
+            if ((Get-Process -Id $rootPid -ErrorAction SilentlyContinue) -and -not $Force) {
+                & taskkill.exe /PID $rootPid /T /F 2>$null | Out-Null
+            }
+        } finally {
+            $ErrorActionPreference = $savedErrorAction
+        }
+        foreach ($targetPid in @($descendants | Sort-Object -Descending) + @($rootPid)) {
+            Stop-Process -Id $targetPid -Force -ErrorAction SilentlyContinue
         }
     } else {
-        $descendants = @(Get-SceneMindDescendantPids $rootPid)
         $targets = @($descendants | Sort-Object -Descending) + @($rootPid)
         foreach ($targetPid in $targets) {
             Stop-Process -Id $targetPid -Force -ErrorAction SilentlyContinue
