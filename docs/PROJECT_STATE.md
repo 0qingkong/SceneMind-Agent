@@ -1,6 +1,6 @@
 # SceneMind Agent — Project State
 
-Last updated: 2026-07-22
+Last updated: 2026-07-30
 
 ## Deadline
 
@@ -60,18 +60,28 @@ Competition submission deadline: 2026-08-08.
 - Deterministic memory-agent intents, read-only tools and evidence cards
 - Explicit Demo Mode, evaluation tooling and competition documentation
 
-## Current milestone
-
 ### Day 9–12 — Multi-device capture and continuous spatial observation
 
-Implementation is ready for user verification: typed browser capture sources, `/live`, persistent low-frequency capture sessions, device statistics, AI Glasses Simulator, memory insights, privacy preferences, JSON export, navigation and automated test code.
+- Typed browser capture sources and Live Lens
+- Persistent low-frequency capture sessions
+- Device statistics, AI Glasses Simulator, insights and privacy preferences
+
+## Current milestone
+
+### Day 13 — Competition demo engineering
+
+- Repository-relative one-click setup/start/stop scripts
+- Profile A/B/C orchestration with explicit truth labels
+- Liveness and dependency readiness endpoints
+- Idempotent observations/session Demo seed and scoped reset
+- PID identity verification, ignored runtime logs/status
+- System status UI, smoke checks and recovery/offline runbooks
 
 ## Next milestones
 
-- Run required backend/frontend checks and manual real-YOLO acceptance.
-- Record real-image evaluation results without claiming unmeasured metrics.
-- Merge Day 7/8 first, then the Day 9–12 feature branch.
-- Manually verify desktop webcam and a physical phone through trusted HTTPS.
+- Run final full tests/build and Profile C/stop/reset acceptance.
+- Rehearse Profile A and B with real permitted inputs before competition day.
+- Prepare and checksum the lawful offline package.
 
 ## Product constraints
 

@@ -101,3 +101,27 @@ Status: accepted
 Decision: non-sensitive UI preferences use versioned localStorage. JSON export is generated from API schemas and excludes image bytes and server paths. Retention-based automatic deletion remains explicitly planned rather than implied.
 
 Reason: preferences do not justify a backend account/settings system. Avoiding unsupported encryption, blur and retention claims preserves product truthfulness.
+
+## ADR-014 — Managed competition processes
+
+Status: accepted
+
+Decision: Day 13 startup writes PID metadata containing role, process name and start time into ignored `.runtime/pids`. Stop operations require all identity fields to match and only traverse descendants of that verified PID.
+
+Reason: competition recovery must not use broad Python/Node termination commands that could stop unrelated development tools or user processes. Logs survive process cleanup for diagnosis.
+
+## ADR-015 — Dependency readiness without model activation
+
+Status: accepted
+
+Decision: `/health` remains lightweight liveness. `/ready` probes the database and writable image storage, reports analyzer configuration/load state, spatial reasoning, Demo state and active sessions, but never invokes analyzer initialization or inference.
+
+Reason: a status check must not download weights, allocate CUDA memory or turn a predictable startup into a slow model operation. Unloaded YOLO is an observable attention state, not a readiness failure when storage and database are healthy.
+
+## ADR-016 — Durable scoped Demo evidence
+
+Status: accepted
+
+Decision: generated Demo observations and sessions use deterministic IDs plus persistent `is_demo` markers. Compatibility reset also recognizes the exact legacy `demo-seed` engine. Per-observation capture save reasons are stored for session evidence.
+
+Reason: fixed keys make seed idempotent; explicit markers allow safe reset and visible frontend labels. User rows with colliding IDs are skipped and never overwritten or selected solely by ID.
