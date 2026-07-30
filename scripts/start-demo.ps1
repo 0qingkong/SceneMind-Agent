@@ -29,9 +29,14 @@ try {
     $backendPidPath = Get-SceneMindPidPath "backend"
     $started.Add($backendPidPath)
 
+    if ($shouldSeed) { & (Join-Path $PSScriptRoot "seed-demo.ps1") }
+
     & (Join-Path $PSScriptRoot "start-frontend.ps1") -NoOpen
     $frontendPidPath = Get-SceneMindPidPath "frontend"
     $started.Add($frontendPidPath)
+
+    & (Join-Path $PSScriptRoot "smoke-demo.ps1")
+    if ($LASTEXITCODE -ne 0) { throw "Smoke verification failed." }
 
     $backend = Read-SceneMindProcessMetadata $backendPidPath
     $frontend = Read-SceneMindProcessMetadata $frontendPidPath
