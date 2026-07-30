@@ -125,3 +125,27 @@ Status: accepted
 Decision: generated Demo observations and sessions use deterministic IDs plus persistent `is_demo` markers. Compatibility reset also recognizes the exact legacy `demo-seed` engine. Per-observation capture save reasons are stored for session evidence.
 
 Reason: fixed keys make seed idempotent; explicit markers allow safe reset and visible frontend labels. User rows with colliding IDs are skipped and never overwritten or selected solely by ID.
+
+## ADR-017 - Bind test lifecycle resources through FastAPI app state
+
+Status: accepted
+
+Decision: production retains database/storage/settings singletons, while tests may bind isolated equivalents through `app.state` before lifespan startup.
+
+Reason: dependency overrides do not affect lifespan startup; this seam prevents `TestClient` from touching the user's database.
+
+## ADR-018 - Browser automation uses Profile C and synthetic evidence
+
+Status: accepted
+
+Decision: Playwright uses Mock inference, a run-local generated image, fixed ports/viewport, and no physical camera request.
+
+Reason: browser evidence stays deterministic and privacy-safe. Real YOLO and camera behavior remain manual acceptance.
+
+## ADR-019 - Validate database and filesystem integrity together
+
+Status: accepted
+
+Decision: one validator checks relational invariants, image references in both directions, demo markers, ordering, and exported JSON.
+
+Reason: SQLite foreign keys cannot detect missing or unreferenced filesystem evidence.

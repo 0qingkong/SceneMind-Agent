@@ -8,6 +8,15 @@ Competition submission deadline: 2026-08-08.
 
 ## Completed
 
+### Day 14 - End-to-end resilience validation
+
+- Isolated FastAPI lifespan and complete multi-endpoint API lifecycle
+- Six deterministic Playwright Profile C flows without camera access
+- Controlled input, analyzer, storage, session, port, PID, and process failures
+- JSON-capable data-integrity validator and PowerShell entry points
+- Corrupt-image HTTP 400 handling and reliable managed-process cleanup
+- Actual report with Profile A/B/phone explicitly marked `not run`
+
 ### Day 1 — Runnable skeleton
 
 - Vue 3 + TypeScript + Vite frontend
