@@ -38,6 +38,7 @@ backend/data/
 
 # Logs
 *.log
+.runtime/
 
 # TypeScript build artifacts
 *.tsbuildinfo

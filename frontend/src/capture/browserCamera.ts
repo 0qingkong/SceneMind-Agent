@@ -1,12 +1,12 @@
-import { captureVideoFrame } from './frameCapture'
+import { captureVideoFrame } from './frameCapture.js'
 import type {
   CaptureConnectOptions,
   CaptureDevice,
   CaptureSource,
   CaptureSourceState,
   CaptureSourceType,
-} from './types'
-import { CaptureSourceError } from './types'
+} from './types.js'
+import { CaptureSourceError } from './types.js'
 
 function cameraError(error: unknown): CaptureSourceError {
   if (error instanceof CaptureSourceError) return error
@@ -40,12 +40,13 @@ export class BrowserCameraSource implements CaptureSource {
       throw new CaptureSourceError('unsupported', '当前浏览器不支持摄像头采集。')
     }
     if (this.connecting) return this.connecting
-    const canReuseStream = this.stream?.active
+    const currentStream = this.stream
+    const canReuseStream = currentStream?.active
       && !options.deviceId
       && (!options.facingMode || options.facingMode === this.facingMode)
-    if (canReuseStream) {
+    if (canReuseStream && currentStream) {
       if (options.videoElement) this.attach(options.videoElement)
-      return this.stream
+      return currentStream
     }
     this.connecting = this.open(options)
     try {

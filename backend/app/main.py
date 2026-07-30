@@ -11,6 +11,7 @@ from app.api.routes.health import router as health_router
 from app.api.routes.memory import router as memory_router
 from app.api.routes.observations import router as observations_router
 from app.dependencies import database, image_storage, settings
+from app.core.version import APP_VERSION
 from app.services.demo_data import DemoDataService
 
 
@@ -24,7 +25,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="SceneMind Agent API",
-    version="0.12.0",
+    version=APP_VERSION,
     description="SceneMind Agent 多模态空间记忆服务。",
     lifespan=lifespan,
 )
@@ -50,7 +51,8 @@ app.include_router(dashboard_router, prefix="/api/v1")
 async def root() -> dict[str, str]:
     return {
         "name": "SceneMind Agent API",
-        "version": "0.12.0",
+        "version": APP_VERSION,
         "docs": "/docs",
         "health": "/api/v1/health",
+        "ready": "/api/v1/ready",
     }

@@ -95,10 +95,12 @@ class AgentPlanner:
         if any(token in lowered for token in ("哪些场景", "历史", "history", "seen", "见过")) and object_query:
             return AgentPlan(intent="history", object_query=object_query, limit=limit)
         if any(token in lowered for token in ("一共", "总共", "多少", "how many", "count")):
+            location = _extract_location(cleaned)
+            count_query = cleaned.replace(location, "", 1) if location else cleaned
             return AgentPlan(
                 intent="object_count",
-                object_query=object_query,
-                location=_extract_location(cleaned),
+                object_query=_extract_object(count_query),
+                location=location,
                 limit=limit,
             )
         observation_ref = _extract_observation_ref(cleaned)

@@ -21,6 +21,7 @@ onMounted(async () => {
       <RouterLink to="/glasses"><strong>眼镜模拟器</strong><span>未来设备交互预览</span></RouterLink>
       <RouterLink to="/insights"><strong>记忆洞察</strong><span>真实持久化数据统计</span></RouterLink>
       <RouterLink to="/privacy"><strong>隐私与设置</strong><span>采集偏好和 JSON 导出</span></RouterLink>
+      <RouterLink to="/system"><strong>系统状态</strong><span>后端、数据库、模型和演示环境</span></RouterLink>
     </div>
     <section class="system-card"><h2>系统状态</h2><p v-if="offline">后端不可用</p><template v-else-if="health"><p>API v{{ health.version }} · {{ health.analyzer_mode }}</p><p>模型：{{ health.model_loaded ? '已加载' : '按需加载' }} · {{ health.device || '尚未选择设备' }}</p><p>Demo Mode：{{ health.demo_mode ? '开启' : '关闭' }}</p></template></section>
   </section>

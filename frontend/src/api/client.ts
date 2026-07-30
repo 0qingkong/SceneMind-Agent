@@ -13,6 +13,7 @@ import type {
   DeviceStatsResponse,
   HealthResponse,
   InsightsResponse,
+  ReadinessResponse,
 } from '../types/api'
 
 const api = axios.create({
@@ -161,6 +162,10 @@ export async function getInsights(): Promise<InsightsResponse> {
 
 export async function getHealth(): Promise<HealthResponse> {
   return (await api.get<HealthResponse>('/health')).data
+}
+
+export async function getReadiness(): Promise<ReadinessResponse> {
+  return (await api.get<ReadinessResponse>('/ready')).data
 }
 
 export async function exportData(): Promise<Blob> {

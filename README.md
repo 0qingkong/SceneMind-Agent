@@ -1,6 +1,37 @@
 # SceneMind Agent
 
-SceneMind Agent 是一个面向移动端的多模态空间记忆产品。当前 Day 9–12 实现支持图片上传、浏览器实时镜头、低频观察会话、来源设备统计、记忆洞察，以及通过受约束 Agent 返回可打开的图片证据。
+SceneMind Agent 是一个面向移动端的多模态空间记忆产品。Day 13 在既有图片上传、实时镜头、低频观察会话和有证据 Agent 之上，增加比赛所需的一键启动、健康检查、应急演示数据与安全恢复工具。
+
+## 比赛一键运行
+
+首次准备（不会覆盖已有 `.env`，也不会自动下载 YOLO 权重）：
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\scripts\check-system.ps1
+.\scripts\setup.ps1
+```
+
+选择演示 Profile：
+
+```powershell
+# A：摄像头 + 真实 YOLO + 持久化 + Agent
+.\scripts\start-demo.ps1 -Profile A
+
+# B：本地许可图片 + 真实 YOLO + 持久化 + Agent
+.\scripts\start-demo.ps1 -Profile B
+
+# C：无摄像头、无实时 YOLO 的应急证据演示
+.\scripts\start-demo.ps1 -Profile C
+```
+
+停止时只读取 SceneMind 自己的 PID 元数据，不会批量结束 Python/Node：
+
+```powershell
+.\scripts\stop-demo.ps1
+```
+
+运行日志位于忽略的 `.runtime\logs`。完整现场流程见 [Demo Runbook](docs/DEMO_RUNBOOK.md)，故障恢复见 [Recovery](docs/RECOVERY.md)。
 
 ## 技术栈
 
@@ -30,6 +61,7 @@ cd backend
 
 - API 文档：http://127.0.0.1:8000/docs
 - 健康检查：http://127.0.0.1:8000/api/v1/health
+- 就绪检查：http://127.0.0.1:8000/api/v1/ready
 - 分析接口：`POST http://127.0.0.1:8000/api/v1/analyze`
 - 场景观察：`/api/v1/observations`
 - 最近出现：`GET /api/v1/memory/last-seen?q=杯子`
@@ -140,12 +172,15 @@ cd backend
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-启用后添加三条由项目代码生成的示例观察。固定 ID 保证重复启动不会重复写入；引擎标记和前端徽标会显示“演示数据”。已有真实记录永远不会被覆盖。仅清理演示数据：
+启用后添加项目代码生成的桌面、教室、图书馆和低频会话证据。固定 ID 与持久化 `is_demo` 标记保证重复启动不会重复写入；前端徽标和全局横幅会显示“演示数据”。已有真实记录永远不会被覆盖。推荐通过包装脚本管理：
 
 ```powershell
-cd backend
-..\.venv\Scripts\python.exe scripts\reset_demo.py
+.\scripts\seed-demo.ps1
+.\scripts\seed-demo.ps1
+.\scripts\reset-demo.ps1 -ConfirmReset
 ```
+
+第二次 seed 会报告全部跳过。reset 只选择 Demo 标记或兼容的 `demo-seed` 旧记录，并保留用户数据。
 
 ## 文档与评估
 
@@ -202,6 +237,12 @@ cd backend
 cd ..\frontend
 npm run build
 npm run test:capture
+
+cd ..
+.\scripts\check-system.ps1
+.\scripts\start-demo.ps1 -Profile C -NoBrowser
+.\scripts\smoke-demo.ps1
+.\scripts\stop-demo.ps1
 ```
 
 ## 当前范围

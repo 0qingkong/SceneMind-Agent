@@ -42,6 +42,19 @@ class ImageStorage:
             raise ImageStorageError(f"Unable to save scene image: {exc}") from exc
         return filename
 
+    def probe_writable(self) -> bool:
+        """Check configured storage with a short-lived file and leave no probe behind."""
+
+        self.root.mkdir(parents=True, exist_ok=True)
+        probe = self.root / f".readiness-{uuid4().hex}.tmp"
+        try:
+            probe.write_bytes(b"scenemind-ready")
+            return probe.read_bytes() == b"scenemind-ready"
+        except OSError:
+            return False
+        finally:
+            probe.unlink(missing_ok=True)
+
     def resolve(self, relative_path: str) -> Path:
         if not relative_path or Path(relative_path).is_absolute():
             raise ImageStorageError("Invalid stored image path")

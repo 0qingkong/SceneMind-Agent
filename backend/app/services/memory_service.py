@@ -182,12 +182,15 @@ class MemoryService:
             key=lambda item: (-item.score, item.predicate, item.subject_id, item.object_id),
         )
         seen: set[tuple[str, str, str]] = set()
+        seen_pairs: set[tuple[str, str]] = set()
         result: list[RelationContext] = []
         for relation in relevant:
             key = _reciprocal_key(relation)
-            if key in seen:
+            pair = tuple(sorted((relation.subject_id, relation.object_id)))
+            if key in seen or pair in seen_pairs:
                 continue
             seen.add(key)
+            seen_pairs.add(pair)
             result.append(
                 RelationContext(
                     relation_id=relation.id,

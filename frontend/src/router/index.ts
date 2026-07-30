@@ -13,6 +13,7 @@ import GlassesView from '../views/GlassesView.vue'
 import InsightsView from '../views/InsightsView.vue'
 import PrivacyView from '../views/PrivacyView.vue'
 import MeView from '../views/MeView.vue'
+import SystemView from '../views/SystemView.vue'
 
 export default createRouter({
   history: createWebHistory(),
@@ -30,6 +31,7 @@ export default createRouter({
     { path: '/insights', name: 'insights', component: InsightsView },
     { path: '/privacy', name: 'privacy', component: PrivacyView },
     { path: '/me', name: 'me', component: MeView },
+    { path: '/system', name: 'system', component: SystemView },
   ],
   scrollBehavior: () => ({ top: 0 }),
 })

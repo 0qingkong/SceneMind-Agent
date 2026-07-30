@@ -53,6 +53,8 @@ class Database:
             "source_device_name": "VARCHAR(255)",
             "captured_at": "DATETIME",
             "session_id": "VARCHAR(36)",
+            "is_demo": "BOOLEAN NOT NULL DEFAULT 0",
+            "capture_reason": "VARCHAR(50)",
         }
         with self.engine.begin() as connection:
             for name, sql_type in additions.items():
@@ -66,6 +68,29 @@ class Database:
                     "ON observations (session_id)"
                 )
             )
+            connection.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS ix_observations_is_demo "
+                    "ON observations (is_demo)"
+                )
+            )
+        session_columns = {
+            item["name"] for item in inspect(self.engine).get_columns("capture_sessions")
+        }
+        if "is_demo" not in session_columns:
+            with self.engine.begin() as connection:
+                connection.execute(
+                    text(
+                        "ALTER TABLE capture_sessions ADD COLUMN "
+                        "is_demo BOOLEAN NOT NULL DEFAULT 0"
+                    )
+                )
+                connection.execute(
+                    text(
+                        "CREATE INDEX IF NOT EXISTS ix_capture_sessions_is_demo "
+                        "ON capture_sessions (is_demo)"
+                    )
+                )
 
     def sessions(self) -> Iterator[Session]:
         with self.session_factory() as session:

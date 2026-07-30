@@ -1,4 +1,4 @@
-import { CaptureSourceError } from './types'
+import { CaptureSourceError } from './types.js'
 
 export interface FrameCaptureOptions {
   imageType: string

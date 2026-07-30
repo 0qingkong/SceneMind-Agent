@@ -33,7 +33,8 @@ def observation_summary(model: Observation) -> ObservationSummary:
         object_count=model.object_count,
         relation_count=model.relation_count,
         labels=labels,
-        is_demo=model.engine == "demo-seed",
+        is_demo=bool(model.is_demo or model.engine == "demo-seed"),
+        capture_reason=model.capture_reason,
         source_type=model.source_type,
         source_device_id=model.source_device_id,
         source_device_name=model.source_device_name,
@@ -104,6 +105,8 @@ class ObservationRepository:
         source_device_name: str | None = None,
         captured_at: datetime | None = None,
         session_id: str | None = None,
+        is_demo: bool = False,
+        capture_reason: str | None = None,
     ) -> Observation:
         object_ids = {item.id for item in analysis.objects}
         if len(object_ids) != len(analysis.objects):
@@ -133,6 +136,8 @@ class ObservationRepository:
             source_device_name=source_device_name,
             captured_at=captured_at,
             session_id=session_id,
+            is_demo=is_demo,
+            capture_reason=capture_reason,
             objects=[
                 ObservedObject(
                     id=item.id,
@@ -322,7 +327,7 @@ class ObservationRepository:
         return list(
             self.session.scalars(
                 select(Observation)
-                .where(Observation.engine == "demo-seed")
+                .where(or_(Observation.is_demo.is_(True), Observation.engine == "demo-seed"))
                 .options(
                     selectinload(Observation.objects),
                     selectinload(Observation.relations),
