@@ -58,7 +58,7 @@ export function savePreferences(
 ) {
   const normalized = loadPreferences({
     getItem: () => JSON.stringify(preferences),
-  } as Storage)
+  } as unknown as Storage)
   storage.setItem(SETTINGS_KEY, JSON.stringify(normalized))
   globalThis.dispatchEvent?.(new CustomEvent(SETTINGS_EVENT, { detail: normalized }))
   return normalized

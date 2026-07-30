@@ -43,6 +43,7 @@ def _read_bool(source: Mapping[str, str], name: str, default: bool) -> bool:
 @dataclass(frozen=True, slots=True)
 class Settings:
     allowed_origins: tuple[str, ...] = ("http://localhost:5173", "http://127.0.0.1:5173")
+    app_build: str = "day13-demo-engineering"
     analyzer_mode: str = "yolo"
     yolo_model: str = "yolo26n.pt"
     yolo_conf: float = 0.30
@@ -65,6 +66,7 @@ class Settings:
     agent_default_limit: int = 3
     agent_max_limit: int = 20
     demo_mode: bool = False
+    demo_profile: str = "none"
     capture_default_interval_seconds: int = 5
     capture_min_interval_seconds: int = 3
     capture_max_interval_seconds: int = 60
@@ -83,6 +85,10 @@ class Settings:
             raise ValueError("YOLO_MODEL must not be empty")
         if not self.allowed_origins:
             raise ValueError("ALLOWED_ORIGINS must contain at least one origin")
+        if not self.app_build.strip():
+            raise ValueError("APP_BUILD must not be empty")
+        if self.demo_profile not in {"A", "B", "C", "none"}:
+            raise ValueError("DEMO_PROFILE must be A, B, C, or none")
         if not self.yolo_device.strip():
             raise ValueError("YOLO_DEVICE must not be empty")
         if not 0 < self.spatial_near_threshold <= 1:
@@ -150,6 +156,8 @@ class Settings:
                 ).split(",")
                 if item.strip()
             ),
+            app_build=source.get("APP_BUILD", "day13-demo-engineering").strip()
+            or "day13-demo-engineering",
             analyzer_mode=source.get("ANALYZER_MODE", "yolo").strip().lower() or "yolo",
             yolo_model=source.get("YOLO_MODEL", "yolo26n.pt").strip()
             or "yolo26n.pt",
@@ -197,6 +205,7 @@ class Settings:
             agent_default_limit=_read_int(source, "AGENT_DEFAULT_LIMIT", 3),
             agent_max_limit=_read_int(source, "AGENT_MAX_LIMIT", 20),
             demo_mode=_read_bool(source, "DEMO_MODE", False),
+            demo_profile=source.get("DEMO_PROFILE", "none").strip() or "none",
             capture_default_interval_seconds=_read_int(source, "CAPTURE_DEFAULT_INTERVAL_SECONDS", 5),
             capture_min_interval_seconds=_read_int(source, "CAPTURE_MIN_INTERVAL_SECONDS", 3),
             capture_max_interval_seconds=_read_int(source, "CAPTURE_MAX_INTERVAL_SECONDS", 60),

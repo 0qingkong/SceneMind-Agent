@@ -74,6 +74,8 @@ class ObservationService:
             source_device_name=source_device_name,
             captured_at=captured_at,
             session_id=session_id,
+            is_demo=False,
+            capture_reason=None,
             commit=True,
         )
         return detail
@@ -92,6 +94,8 @@ class ObservationService:
         captured_at: datetime | None,
         session_id: str | None,
         commit: bool,
+        is_demo: bool = False,
+        capture_reason: str | None = None,
     ) -> tuple[ObservationDetail, str]:
         title = self._optional_text(title, "title")
         location = self._optional_text(location, "location")
@@ -113,6 +117,8 @@ class ObservationService:
                 source_device_name=self._optional_text(source_device_name, "source_device_name", 255),
                 captured_at=captured_at,
                 session_id=session_id,
+                is_demo=is_demo,
+                capture_reason=self._optional_text(capture_reason, "capture_reason", 50),
             )
             if commit:
                 self.session.commit()

@@ -24,6 +24,7 @@ class ObservationSummary(BaseModel):
     relation_count: int = Field(ge=0)
     labels: list[str] = Field(default_factory=list)
     is_demo: bool = False
+    capture_reason: str | None = None
     source_type: str | None = None
     source_device_id: str | None = None
     source_device_name: str | None = None

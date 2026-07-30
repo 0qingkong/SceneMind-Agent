@@ -61,6 +61,7 @@ export interface ObservationSummary {
   relation_count: number
   labels: string[]
   is_demo: boolean
+  capture_reason: string | null
   source_type: string | null
   source_device_id: string | null
   source_device_name: string | null
@@ -174,6 +175,7 @@ export interface CaptureSessionSummary {
   auto_save_mode: AutoSaveMode
   last_sampled_at: string | null
   last_saved_at: string | null
+  is_demo: boolean
 }
 
 export interface CaptureSessionDetail extends CaptureSessionSummary {
@@ -235,8 +237,30 @@ export interface InsightsResponse {
 export interface HealthResponse {
   status: string
   version: string
+  build: string
   analyzer_mode: string
   model_loaded: boolean
   device: string | null
   demo_mode: boolean
+  demo_profile: 'A' | 'B' | 'C' | 'none'
+}
+
+export interface ReadinessResponse {
+  status: 'ready' | 'not_ready'
+  service: string
+  version: string
+  build: string
+  database_reachable: boolean
+  storage_writable: boolean
+  analyzer_mode: string
+  model_configured: boolean
+  model_name: string
+  model_loaded: boolean
+  device: string | null
+  spatial_reasoner_enabled: boolean
+  demo_mode: boolean
+  demo_profile: 'A' | 'B' | 'C' | 'none'
+  demo_data_present: boolean
+  active_session_count: number
+  timestamp: string
 }

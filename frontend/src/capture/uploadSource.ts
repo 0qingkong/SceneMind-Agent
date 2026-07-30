@@ -1,5 +1,5 @@
-import type { CaptureDevice, CaptureSource, CaptureSourceState } from './types'
-import { CaptureSourceError } from './types'
+import type { CaptureDevice, CaptureSource, CaptureSourceState } from './types.js'
+import { CaptureSourceError } from './types.js'
 
 export class UploadCaptureSource implements CaptureSource {
   readonly type = 'upload' as const

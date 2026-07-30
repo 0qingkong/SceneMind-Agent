@@ -35,6 +35,8 @@ class Observation(Base):
     summary: Mapped[str] = mapped_column(Text)
     object_count: Mapped[int] = mapped_column(Integer)
     relation_count: Mapped[int] = mapped_column(Integer)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    capture_reason: Mapped[str | None] = mapped_column(String(50), nullable=True)
     source_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
     source_device_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     source_device_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -81,6 +83,7 @@ class CaptureSession(Base):
     target_seen: Mapped[bool] = mapped_column(Boolean, default=False)
     last_sampled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_saved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
 
     observations: Mapped[list[Observation]] = relationship(
         back_populates="capture_session",

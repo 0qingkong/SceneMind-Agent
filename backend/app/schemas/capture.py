@@ -41,6 +41,7 @@ class CaptureSessionSummary(BaseModel):
     auto_save_mode: AutoSaveMode
     last_sampled_at: datetime | None
     last_saved_at: datetime | None
+    is_demo: bool = False
 
 
 class CaptureSessionDetail(CaptureSessionSummary):

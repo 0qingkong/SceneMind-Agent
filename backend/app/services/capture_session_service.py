@@ -72,6 +72,7 @@ def session_summary(model: CaptureSession) -> CaptureSessionSummary:
         auto_save_mode=model.auto_save_mode,
         last_sampled_at=_utc(model.last_sampled_at),
         last_saved_at=_utc(model.last_saved_at),
+        is_demo=model.is_demo,
     )
 
 
@@ -114,6 +115,7 @@ class CaptureSessionService:
             auto_save_mode=request.auto_save_mode,
             last_labels_json="[]",
             target_seen=False,
+            is_demo=False,
         )
         self.repository.create(model)
         self.session.commit()
@@ -224,6 +226,8 @@ class CaptureSessionService:
                     source_device_name=sample_device_name,
                     captured_at=sample["captured_at"] or now,  # type: ignore[arg-type]
                     session_id=model.id,
+                    is_demo=model.is_demo,
+                    capture_reason=reason,
                     commit=False,
                 )
                 observation_id = detail.id
@@ -316,7 +320,7 @@ class CaptureSessionService:
     def _detail(model: CaptureSession) -> CaptureSessionDetail:
         observations = sorted(
             model.observations,
-            key=lambda item: (item.created_at, item.id),
+            key=lambda item: (_utc(item.created_at), item.id),
             reverse=True,
         )[:20]
         return CaptureSessionDetail(
