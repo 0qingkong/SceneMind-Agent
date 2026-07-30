@@ -16,11 +16,16 @@ from app.services.demo_data import DemoDataService
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI):
-    database.create_tables()
-    if settings.demo_mode:
-        with database.session_factory() as session:
-            DemoDataService(session, image_storage).seed()
+async def lifespan(application: FastAPI):
+    # Tests can bind isolated lifecycle resources through app.state without
+    # mutating the production dependency singletons or the user's database.
+    active_database = getattr(application.state, "database", database)
+    active_storage = getattr(application.state, "image_storage", image_storage)
+    active_settings = getattr(application.state, "settings", settings)
+    active_database.create_tables()
+    if active_settings.demo_mode:
+        with active_database.session_factory() as session:
+            DemoDataService(session, active_storage).seed()
     yield
 
 app = FastAPI(
