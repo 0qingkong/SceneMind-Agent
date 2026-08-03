@@ -73,7 +73,7 @@ class AnalysisService:
                 image.verify()
             with Image.open(BytesIO(image_bytes)) as image:
                 width, height = image.size
-        except (UnidentifiedImageError, OSError, ValueError) as exc:
+        except (UnidentifiedImageError, OSError, SyntaxError, ValueError) as exc:
             raise ImageValidationError(
                 400, "文件内容不是有效图片或图片已经损坏。"
             ) from exc

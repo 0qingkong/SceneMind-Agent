@@ -245,6 +245,18 @@ cd ..
 .\scripts\stop-demo.ps1
 ```
 
+## Day 14 deterministic validation
+
+The resilience suite uses isolated databases, image storage, ports, and Mock inference:
+
+```powershell
+.\scripts\e2e-test.ps1
+.\scripts\failure-test.ps1
+.\scripts\data-integrity-test.ps1
+```
+
+Use `-SkipBrowser` when Edge/Playwright is unavailable, `-KeepRuntime` to retain fixtures, and `-Json` for machine-readable output. Artifacts stay under ignored `.runtime\test-results`. See [TEST_PLAN](docs/TEST_PLAN.md) and [TEST_REPORT](docs/TEST_REPORT.md).
+
 ## 当前范围
 
 Day 9–12 增加浏览器摄像头、多来源低频会话、设备中心、明确标记的眼镜模拟器、真实数据洞察和本地隐私偏好。真实商业眼镜集成、后台 Service Worker 摄像头、麦克风录制、跨图身份跟踪、开放领域聊天、深度估计、加密和人脸模糊不属于本次 MVP。
