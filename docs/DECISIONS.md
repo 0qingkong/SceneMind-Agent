@@ -149,3 +149,27 @@ Status: accepted
 Decision: one validator checks relational invariants, image references in both directions, demo markers, ordering, and exported JSON.
 
 Reason: SQLite foreign keys cannot detect missing or unreferenced filesystem evidence.
+
+## ADR-020 - Scope metrics to available ground truth
+
+Status: accepted
+
+Decision: detection reports processing and latency signals until bounding boxes are manually annotated. Reviewed predicted relations report precision but never recall. Every metric records its sample count and unavailable work is `not_run`.
+
+Reason: metric names such as mAP, recall and F1 would imply ground truth that the project does not have. Narrow truthful evidence is more useful than a broad unsupported benchmark claim.
+
+## ADR-021 - Keep Mock and YOLO evaluation runs separate
+
+Status: accepted
+
+Decision: every detection/relation run is labeled with its analyzer mode. YOLO commands with no licensed local assets produce `not_run`; they never reuse Mock/manual results as real-model scores.
+
+Reason: deterministic Mock evaluation proves orchestration, not detector quality. Separating modes prevents accidental competition claims based on fixtures.
+
+## ADR-022 - Generate reports into ignored runtime storage
+
+Status: accepted
+
+Decision: committed code contains manifests, annotations, templates and reviewed methodology. Each run writes environment, hashes, module JSON, failures and Markdown under `.runtime/evaluation/<run-id>`.
+
+Reason: runtime timestamps and machine characteristics create noisy diffs and may reveal local paths. Rebuilding from committed inputs preserves reproducibility while reviewed documentation records the actual baseline.

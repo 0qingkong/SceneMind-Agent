@@ -1,0 +1,13 @@
+sample_id,observation_id,subject_label,predicate,object_label,predicted,manual_correct,ambiguous,reviewer_note
+synthetic-desk-01,00000000-0000-4000-8000-000000000101,cup,left_of,laptop,true,true,false,Reviewed against generated box centers
+synthetic-desk-01,00000000-0000-4000-8000-000000000101,laptop,right_of,cup,true,true,false,Inverse pair is geometrically consistent
+synthetic-desk-01,00000000-0000-4000-8000-000000000101,book,below,laptop,true,true,false,Book center is lower
+synthetic-desk-01,00000000-0000-4000-8000-000000000101,laptop,left_of,chair,true,true,false,Laptop center is left
+synthetic-classroom-01,00000000-0000-4000-8000-000000000102,person-1,left_of,person-2,true,true,false,Ordinal labels identify repeated detections
+synthetic-classroom-01,00000000-0000-4000-8000-000000000102,person-2,right_of,person-1,true,true,false,Inverse pair is consistent
+synthetic-classroom-01,00000000-0000-4000-8000-000000000102,person,overlaps,chair,true,true,true,2D boxes overlap but physical meaning is ambiguous
+synthetic-library-01,00000000-0000-4000-8000-000000000103,book,left_of,laptop,true,true,false,Reviewed against generated box centers
+synthetic-library-01,00000000-0000-4000-8000-000000000103,laptop,left_of,bottle,true,true,false,Reviewed against generated box centers
+synthetic-container-01,manual-synthetic-container,book,inside,box,true,true,false,Inner box is fully contained in reviewed geometry
+synthetic-container-01,manual-synthetic-container,box,contains,book,true,true,false,Inverse containment is consistent
+synthetic-near-01,manual-synthetic-near,cup,near,laptop,true,false,true,Centers are near threshold and reviewer marked prediction incorrect

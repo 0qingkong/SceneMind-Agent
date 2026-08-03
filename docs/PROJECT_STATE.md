@@ -1,12 +1,21 @@
 # SceneMind Agent — Project State
 
-Last updated: 2026-07-30
+Last updated: 2026-08-03
 
 ## Deadline
 
 Competition submission deadline: 2026-08-08.
 
 ## Completed
+
+### Day 15 - Formal reproducible evaluation
+
+- One-command, JSON-capable detection/relation/memory/Agent/session harness
+- Licensed/synthetic asset manifest policy and validation
+- Actual manual relation judgments and deterministic query/sequence cases
+- P50/P95 summaries, environment/config/hash capture and generated reports
+- Nine visible failure/limitation cases; Mock and YOLO results separated
+- Actual Mock report: memory 10/10, Agent 17/18, session 6/6; real YOLO not run
 
 ### Day 14 - End-to-end resilience validation
 
@@ -77,20 +86,16 @@ Competition submission deadline: 2026-08-08.
 
 ## Current milestone
 
-### Day 13 — Competition demo engineering
+### Day 15 — Formal quantitative evaluation
 
-- Repository-relative one-click setup/start/stop scripts
-- Profile A/B/C orchestration with explicit truth labels
-- Liveness and dependency readiness endpoints
-- Idempotent observations/session Demo seed and scoped reset
-- PID identity verification, ignored runtime logs/status
-- System status UI, smoke checks and recovery/offline runbooks
+- Reproducible runtime reports and manual annotations are complete for the permitted synthetic set.
+- Real YOLO evaluation is explicitly `not_run` because no licensed local real-image set was available in this environment.
 
 ## Next milestones
 
-- Run final full tests/build and Profile C/stop/reset acceptance.
-- Rehearse Profile A and B with real permitted inputs before competition day.
-- Prepare and checksum the lawful offline package.
+- Collect and annotate a lawful 40–60 image real-scene set.
+- Rehearse Profile A/B and phone camera with target hardware and trusted HTTPS.
+- Fix the documented physical-distance Agent misroute with a focused regression before changing the reported baseline.
 
 ## Product constraints
 
