@@ -13,7 +13,7 @@ Profile C 的所有预置记录都带 `is_demo`、`demo-seed` 引擎、`[演示]
 ## Before entering the venue
 
 ```powershell
-cd D:\scenemind-agent-starter
+# Open PowerShell in the repository root before running these commands.
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\scripts\check-system.ps1
 .\scripts\setup.ps1

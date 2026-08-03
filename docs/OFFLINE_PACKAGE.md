@@ -1,23 +1,29 @@
-# SceneMind Offline Competition Package
+# Offline Competition Package
 
-离线包是本地备份，不进入 Git。只打包拥有使用许可的内容。
+The offline package is an operator-controlled backup outside Git. Include only content that is licensed for the target machine and redistribution context.
 
-## Suggested contents
+## Required inventory outside Git
 
-- 当前 Git 提交导出的源码归档。
-- 与 `.env.example` 对照后的本地 `.env`（单独保管，不上传）。
-- 已明确下载并允许使用的 YOLO 权重。
-- 获得许可的 Profile B 本地图片。
-- Python wheel/pip 缓存和 npm 缓存；仅包含许可证允许重新分发的包。
-- 已验证的 Profile C Demo SQLite 备份与生成式演示图片。
-- 比赛所需的本地视频、PPT/PDF；这些不属于 Day 13 代码提交。
-- `docs/DEMO_RUNBOOK.md`、`docs/RECOVERY.md` 的离线副本。
+- A source archive at the exact release commit plus its commit SHA.
+- A local `.env` derived from `.env.example`, stored separately and never uploaded.
+- The selected YOLO weight file and its license/source record.
+- Licensed Profile B demonstration images and attribution/consent record.
+- A verified Profile C SQLite/image pair produced by the repository's idempotent seed.
+- Python wheel/pip and npm dependency caches, subject to their redistribution licenses.
+- Presentation PDF/PPT, backup video and speaking notes.
+- Offline copies of `DEMO_RUNBOOK.md`, `RECOVERY.md`, `DEPLOYMENT.md` and `SUBMISSION_CHECKLIST.md`.
+- A manifest containing filename, size, SHA-256, source/license and verification date.
 
-不要把 `.venv`、`node_modules` 当作跨机器可移植安装包。优先保存依赖缓存与 lockfile，然后在目标机器执行 `setup.ps1`。
+Do not treat `.venv` or `node_modules` as portable cross-machine installations. Prefer lockfiles plus verified caches and run `setup.ps1` on the destination.
 
-## Checksums
+## Build the package
 
-在备份目录中生成 SHA-256 清单：
+1. Export the release commit and record `git rev-parse HEAD`.
+2. Copy only approved external assets into a dedicated offline directory.
+3. Install and start on the actual backup computer while internet access is disabled.
+4. Run Profile C extended smoke, then Profile B if licensed images and real YOLO are available.
+5. Stop services, validate reset, and confirm user evidence is unaffected.
+6. Generate and review checksums.
 
 ```powershell
 Get-ChildItem . -Recurse -File |
@@ -26,13 +32,18 @@ Get-ChildItem . -Recurse -File |
   Export-Csv .\SHA256SUMS.csv -NoTypeInformation -Encoding UTF8
 ```
 
-赛前验证：
+Verify the CSV on a second medium or machine. Keep one read-only copy and one working copy.
+
+## Offline acceptance
 
 ```powershell
 .\scripts\check-system.ps1
 .\scripts\start-demo.ps1 -Profile C -NoBrowser
-.\scripts\smoke-demo.ps1
+.\scripts\smoke-demo.ps1 -Extended
 .\scripts\stop-demo.ps1
+.\scripts\check-release-docs.ps1
 ```
 
-数据库、权重、视频、日志和构建产物均必须保持未跟踪状态。
+Then manually confirm: Home disclosure, saved Demo evidence, Agent evidence image, simulator disclaimer, privacy boundaries, stop cleanup and safe Demo reset. Real YOLO and physical-camera acceptance must remain separately recorded.
+
+Databases, images, weights, videos, logs, build output and generated reports remain untracked. See [deployment](DEPLOYMENT.md), [recovery](RECOVERY.md), and the [submission checklist](competition/SUBMISSION_CHECKLIST.md).

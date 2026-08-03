@@ -173,3 +173,19 @@ Status: accepted
 Decision: committed code contains manifests, annotations, templates and reviewed methodology. Each run writes environment, hashes, module JSON, failures and Markdown under `.runtime/evaluation/<run-id>`.
 
 Reason: runtime timestamps and machine characteristics create noisy diffs and may reveal local paths. Rebuilding from committed inputs preserves reproducibility while reviewed documentation records the actual baseline.
+
+## ADR-023 - Layer a tokenized design system over the working UI
+
+Status: accepted
+
+Decision: preserve the Vue architecture and existing page components while introducing shared tokens, base, component, utility and responsive style layers. Desktop uses the complete navigation; mobile uses five safe-area-aware destinations and groups secondary pages under Me.
+
+Reason: a competition release needs consistent hierarchy and accessibility without the risk or bundle cost of a new UI framework. Legacy rules remain below the new shared layers until they can be retired incrementally.
+
+## ADR-024 - Treat competition claims as validated repository data
+
+Status: accepted
+
+Decision: README, evaluation, summary, pitch, technical report and Q&A use the same Day 15 baseline and explicit `not_run` markers. A PowerShell release check validates required files, links, versions, profiles, simulation wording, metrics and prohibited artifacts.
+
+Reason: product credibility depends on preventing documentation drift and keeping implemented, simulated and future capabilities visibly separate.
