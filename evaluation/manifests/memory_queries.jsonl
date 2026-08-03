@@ -1,0 +1,10 @@
+{"case_id":"memory-last-cup-en","operation":"last_seen","query":"cup","expected_observation_id":"00000000-0000-4000-8000-000000000105"}
+{"case_id":"memory-last-cup-zh","operation":"last_seen","query":"杯子","expected_observation_id":"00000000-0000-4000-8000-000000000105"}
+{"case_id":"memory-last-laptop","operation":"last_seen","query":"laptop","expected_observation_id":"00000000-0000-4000-8000-000000000105"}
+{"case_id":"memory-last-person","operation":"last_seen","query":"person","expected_observation_id":"00000000-0000-4000-8000-000000000103"}
+{"case_id":"memory-last-chair","operation":"last_seen","query":"chair","expected_observation_id":"00000000-0000-4000-8000-000000000102"}
+{"case_id":"memory-last-bottle","operation":"last_seen","query":"bottle","expected_observation_id":"00000000-0000-4000-8000-000000000103"}
+{"case_id":"memory-history-cup","operation":"history","query":"cup","expected_observation_ids":["00000000-0000-4000-8000-000000000105","00000000-0000-4000-8000-000000000104","00000000-0000-4000-8000-000000000101"]}
+{"case_id":"memory-history-book","operation":"history","query":"book","expected_observation_ids":["00000000-0000-4000-8000-000000000105","00000000-0000-4000-8000-000000000103","00000000-0000-4000-8000-000000000101"]}
+{"case_id":"memory-history-person","operation":"history","query":"person","expected_observation_ids":["00000000-0000-4000-8000-000000000103","00000000-0000-4000-8000-000000000102"]}
+{"case_id":"memory-no-result","operation":"not_found","query":"umbrella","expected_observation_id":null}
