@@ -33,5 +33,5 @@ export default createRouter({
     { path: '/me', name: 'me', component: MeView },
     { path: '/system', name: 'system', component: SystemView },
   ],
-  scrollBehavior: () => ({ top: 0 }),
+  scrollBehavior: (_to, _from, savedPosition) => savedPosition ?? { top: 0 },
 })

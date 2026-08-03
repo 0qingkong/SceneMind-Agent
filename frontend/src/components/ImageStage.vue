@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import type { DetectedObject } from '../types/api'
 import { buildObjectDisplayNameMap, objectDisplayName } from '../utils/objectDisplayNames'
@@ -11,6 +11,8 @@ const props = defineProps<{
 }>()
 
 const objectNames = computed(() => buildObjectDisplayNameMap(props.objects))
+const imageFailed = ref(false)
+watch(() => props.imageUrl, () => { imageFailed.value = false })
 
 function boxStyle(bbox: [number, number, number, number]) {
   const [x1, y1, x2, y2] = bbox
@@ -25,9 +27,10 @@ function boxStyle(bbox: [number, number, number, number]) {
 
 <template>
   <div class="image-stage">
-    <img :src="imageUrl" alt="待分析场景" />
+    <img v-if="!imageFailed" :src="imageUrl" alt="待分析场景" @error="imageFailed = true" />
+    <div v-else class="image-stage-fallback" role="img" aria-label="场景图片加载失败"><strong>图片证据暂不可用</strong><small>请检查后端图片存储后重试。</small></div>
     <div
-      v-for="item in objects"
+      v-for="item in imageFailed ? [] : objects"
       :key="item.id"
       class="bbox"
       :style="boxStyle(item.bbox)"

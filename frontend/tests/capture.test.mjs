@@ -79,6 +79,8 @@ test('privacy preferences persist and invalid values fall back safely', () => {
   const saved = savePreferences({ ...defaultPreferences, defaultCaptureInterval: 12 }, storage)
   assert.equal(saved.defaultCaptureInterval, 12)
   assert.equal(loadPreferences(storage).defaultCaptureInterval, 12)
+  const indicator = savePreferences({ ...defaultPreferences, alwaysShowCameraIndicator: false }, storage)
+  assert.equal(indicator.alwaysShowCameraIndicator, true)
   values.set('scenemind.privacy.v1', JSON.stringify({
     defaultCaptureInterval: 1,
     pauseAllContinuousCapture: 'false',
@@ -86,6 +88,7 @@ test('privacy preferences persist and invalid values fall back safely', () => {
   const invalid = loadPreferences(storage)
   assert.equal(invalid.defaultCaptureInterval, 5)
   assert.equal(invalid.pauseAllContinuousCapture, false)
+  assert.equal(invalid.alwaysShowCameraIndicator, true)
 })
 
 test('glasses page is explicit about simulation and supports all input modes', async () => {

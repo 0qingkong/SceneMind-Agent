@@ -47,7 +47,7 @@ async function downloadExport() {
         <label>默认采样间隔（3–60 秒）<input v-model.number="preferences.defaultCaptureInterval" type="number" min="3" max="60" /></label>
         <label>自动保存策略<select v-model="preferences.autoSaveMode"><option value="manual">仅手动保存</option><option value="meaningful-change">有意义变化</option><option value="every-analyzed-sample">每个已分析样本</option></select></label>
         <label class="privacy-check"><input v-model="preferences.pauseAllContinuousCapture" type="checkbox" /> 暂停所有连续采集</label>
-        <label class="privacy-check"><input v-model="preferences.alwaysShowCameraIndicator" type="checkbox" /> 始终显示摄像头使用指示</label>
+        <label class="privacy-check"><input v-model="preferences.alwaysShowCameraIndicator" type="checkbox" disabled /> 摄像头使用指示始终开启（不可关闭）</label>
       </section>
       <section class="privacy-card">
         <h2>记忆与界面</h2>
@@ -58,7 +58,7 @@ async function downloadExport() {
       </section>
       <section class="privacy-card truth-card">
         <h2>当前实现边界</h2>
-        <ul><li>摄像头只在明确连接后启用，不录制麦克风。</li><li>连续会话依赖前台页面，不承诺后台运行。</li><li>本项目没有实现加密或人脸模糊。</li><li>图片保存在配置的本地服务端目录。</li></ul>
+        <ul><li>摄像头只在明确连接后启用，不录制麦克风。</li><li>连续会话依赖前台页面，不承诺后台运行。</li><li>规划中：静态加密、人脸模糊与云同步，当前均未实现。</li><li>图片保存在配置的本地服务端目录。</li></ul>
       </section>
       <section class="privacy-card">
         <h2>数据可携带性</h2>

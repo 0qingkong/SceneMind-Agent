@@ -2,6 +2,7 @@
 import { apiAssetUrl } from '../api/client'
 import type { AgentEvidence } from '../types/api'
 import { predicateLabels } from '../utils/relationDisplay'
+import SafeImage from './SafeImage.vue'
 
 defineProps<{ evidence: AgentEvidence }>()
 </script>
@@ -9,7 +10,7 @@ defineProps<{ evidence: AgentEvidence }>()
 <template>
   <article class="agent-evidence-card">
     <div class="agent-evidence-image">
-      <img :src="apiAssetUrl(evidence.image_url)" alt="Agent 回答所依据的场景图片" />
+      <SafeImage :src="apiAssetUrl(evidence.image_url)" alt="Agent 回答所依据的场景图片" />
       <span v-if="evidence.is_demo" class="demo-badge">演示数据</span>
     </div>
     <div class="agent-evidence-body">

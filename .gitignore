@@ -39,6 +39,7 @@ backend/data/
 # Logs
 *.log
 .runtime/
+artifacts/ui-review/
 
 # TypeScript build artifacts
 *.tsbuildinfo

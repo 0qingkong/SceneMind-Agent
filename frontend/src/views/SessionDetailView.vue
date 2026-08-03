@@ -30,7 +30,7 @@ const sampling = ref(false)
 const hiddenPaused = ref(false)
 const allowWhenHidden = ref(false)
 const forceNext = ref(false)
-const showCameraIndicator = ref(loadPreferences().alwaysShowCameraIndicator)
+const showCameraIndicator = ref(true)
 const errorMessage = ref('')
 const eventMessage = ref('')
 let wakeLock: WakeLockSentinelLike | null = null
@@ -200,7 +200,7 @@ onBeforeUnmount(() => {
   <section>
     <div class="page-heading">
       <div><p class="eyebrow">CAPTURE SESSION</p><h1>{{ session?.title || '观察会话详情' }}</h1></div>
-      <span>{{ session?.status || 'loading' }}</span>
+      <span>{{ session ? (session.status === 'active' ? '运行中' : session.status === 'failed' ? '失败' : '已停止') : '加载中' }}</span>
     </div>
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     <template v-if="session">
@@ -231,10 +231,10 @@ onBeforeUnmount(() => {
           <h2>会话信息</h2>
           <div class="session-meta">
             <p><span>间隔</span>{{ session.sample_interval_seconds }} 秒</p>
-            <p><span>保存策略</span>{{ session.auto_save_mode }}</p>
+            <p><span>保存策略</span>{{ session.auto_save_mode === 'manual' ? '仅手动保存' : session.auto_save_mode === 'meaningful-change' ? '有意义变化' : '保存每次分析' }}</p>
             <p><span>目标</span>{{ session.target_query || '未设置' }}</p>
             <p><span>目标状态</span>{{ session.target_seen ? '已出现' : '尚未出现' }}</p>
-            <p><span>来源</span>{{ session.source_type }}</p>
+            <p><span>来源</span>{{ session.source_type === 'browser_camera' ? '浏览器摄像头' : session.source_type }}</p>
             <p><span>位置</span>{{ session.location || '未记录' }}</p>
           </div>
           <p class="retrieval-disclaimer">这是低频前台采样，不是连续视频、30 FPS 推理或后台服务。</p>

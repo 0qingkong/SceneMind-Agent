@@ -87,10 +87,10 @@ async function scanLive(remember = false) {
       })
       currentObservation.value = saved
       result.value = savedAsAnalysis(saved)
-      eventMessage.value = 'MEMORY SAVED'
+      eventMessage.value = '记忆已保存'
     } else {
       result.value = await analyzeScene(frame)
-      eventMessage.value = 'FRAME ANALYZED'
+      eventMessage.value = '画面已分析'
     }
   } finally {
     busy.value = false
@@ -111,7 +111,7 @@ async function loadObservationInput() {
   currentObservation.value = detail
   result.value = savedAsAnalysis(detail)
   imageUrl.value = apiAssetUrl(detail.image_url)
-  eventMessage.value = 'SAVED MEMORY LOADED'
+  eventMessage.value = '已加载保存的记忆'
 }
 
 async function loadSessionInput() {
@@ -124,7 +124,7 @@ async function loadSessionInput() {
   }
   selectedObservation.value = latest.id
   await loadObservationInput()
-  eventMessage.value = 'SESSION MEMORY LOADED'
+  eventMessage.value = '已加载会话记忆'
 }
 
 async function askAgent() {
@@ -147,9 +147,9 @@ onBeforeUnmount(() => {
   <section>
     <div class="page-heading">
       <div><p class="eyebrow">AI GLASSES SIMULATOR</p><h1>未来设备交互预览</h1></div>
-      <span>Simulator</span>
+      <span>浏览器模拟器</span>
     </div>
-    <div class="simulator-disclaimer">当前为浏览器端模拟，不代表已连接真实 AI 眼镜。</div>
+    <div class="simulator-disclaimer"><strong>AI Glasses Simulator · 未来设备交互预览</strong><br />当前为浏览器端模拟，不代表已连接真实 AI 眼镜硬件。</div>
     <div class="simulator-toolbar">
       <label>输入来源
         <select v-model="input" @change="switchInput">
@@ -176,9 +176,9 @@ onBeforeUnmount(() => {
         <video v-show="input === 'live' && !imageUrl" ref="video" autoplay muted playsinline></video>
         <ImageStage v-if="imageUrl" :image-url="imageUrl" :objects="showLabels ? result?.objects ?? [] : []" :loading="busy" />
         <div v-if="input === 'live' && !recording" class="live-placeholder"><p>连接摄像头开始模拟</p></div>
-        <span class="hud-rec" :class="{ active: recording }">{{ recording ? '● REC' : 'PAUSED' }}</span>
-        <span class="hud-source">{{ input.toUpperCase() }}</span>
-        <div v-if="eventMessage" class="hud-event">{{ targetFound ? 'TARGET FOUND · ' : '' }}{{ eventMessage }}</div>
+        <span class="hud-rec" :class="{ active: recording }">{{ recording ? '● 模拟镜头使用中' : '已暂停' }}</span>
+        <span class="hud-source">{{ input === 'live' ? '实时镜头' : input === 'observation' ? '保存观察' : '保存会话' }}</span>
+        <div v-if="eventMessage" class="hud-event">{{ targetFound ? '已找到目标 · ' : '' }}{{ eventMessage }}</div>
       </div>
       <aside class="hud-panel">
         <button v-if="input === 'live'" class="primary-button" :disabled="recording" @click="connectLive">连接模拟镜头</button>
@@ -186,11 +186,11 @@ onBeforeUnmount(() => {
           <button class="secondary-button" :disabled="!recording || busy" @click="scanLive(false)">分析帧</button>
           <button class="primary-button" :disabled="!recording || busy" @click="scanLive(true)">保存记忆</button>
         </div>
-        <label class="find-helper"><input v-model="targetQuery" placeholder="目标物体" /><span :class="targetFound ? 'found-state' : 'not-found-state'">{{ targetFound ? 'FOUND' : 'WAITING' }}</span></label>
+        <label class="find-helper"><input v-model="targetQuery" placeholder="目标物体" /><span :class="targetFound ? 'found-state' : 'not-found-state'">{{ targetFound ? '已找到' : '等待目标' }}</span></label>
         <RelationList v-if="result" :objects="result.objects" :relations="result.relations.slice(0, 6)" />
         <form class="hud-agent" @submit.prevent="askAgent">
           <input v-model="agentQuery" placeholder="询问记忆 Agent" />
-          <button>ASK</button>
+          <button>询问</button>
         </form>
         <p v-if="agentAnswer" class="hud-answer">{{ agentAnswer.answer }}<small>证据 {{ agentAnswer.evidence.length }} 条</small></p>
       </aside>

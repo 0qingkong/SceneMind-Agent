@@ -20,7 +20,7 @@ test('analysis saves evidence and opens memory detail', async ({ page }) => {
 test('memory search returns last-seen and history evidence', async ({ page }) => {
   await page.goto('/memory')
   await page.locator('.memory-search input').fill('cup')
-  await page.locator('.memory-search button').click()
+  await page.getByRole('button', { name: '搜索记忆' }).click()
   await expect(page.locator('.last-seen-section')).toBeVisible()
   await expect(page.locator('.history-timeline')).toBeVisible()
   await expect(page.locator('.history-timeline a').first()).toBeVisible()
@@ -50,12 +50,12 @@ test('devices, insights, glasses disclaimer, and system are observable', async (
   await expect(page.getByText('AI Glasses Simulator', { exact: true })).toBeVisible()
   await page.goto('/glasses')
   await expect(page.locator('.simulator-disclaimer')).toBeVisible()
-  await expect(page.locator('.page-heading span')).toHaveText('Simulator')
+  await expect(page.locator('.page-heading span')).toHaveText('浏览器模拟器')
   await page.goto('/insights')
   await expect(page.locator('.insights-layout')).toBeVisible()
   await page.goto('/system')
   await expect(page.locator('.page-heading .eyebrow')).toHaveText('COMPETITION READINESS')
-  await expect(page.locator('.page-heading > span')).toHaveText('ready')
+  await expect(page.locator('.page-heading > span')).toHaveText('就绪')
   await expect(page.locator('.system-details')).toContainText('C')
 })
 

@@ -30,14 +30,14 @@ onMounted(async () => {
   <section>
     <div class="page-heading">
       <div><p class="eyebrow">MEMORY INSIGHTS</p><h1>空间记忆洞察</h1></div>
-      <span>Persisted data</span>
+      <span>真实持久化数据</span>
     </div>
     <p v-if="loading" class="memory-status">正在聚合数据…</p>
     <p v-else-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     <div v-else-if="insights && insights.total_observations" class="insights-layout">
       <div class="insight-metrics">
         <article><strong>{{ insights.total_observations }}</strong><span>全部观察</span><small>7 天 {{ insights.observations_7_days }} · 30 天 {{ insights.observations_30_days }}</small></article>
-        <article><strong>{{ insights.total_sessions }}</strong><span>采集会话</span><small>{{ insights.active_sessions }} 个仍标记为 active</small></article>
+        <article><strong>{{ insights.total_sessions }}</strong><span>采集会话</span><small>{{ insights.active_sessions }} 个仍标记为运行中</small></article>
         <article><strong>{{ insights.analyzed_frames }}</strong><span>已分析帧</span><small>{{ insights.sampled_frames }} 采样 · {{ insights.saved_frames }} 保存</small></article>
         <article><strong>{{ Math.round(insights.session_save_efficiency * 100) }}%</strong><span>会话保存效率</span><small>保存帧 / 已分析帧</small></article>
         <article><strong>{{ insights.average_objects }}</strong><span>平均物体</span><small>每条观察</small></article>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { apiAssetUrl } from '../api/client'
+import SafeImage from './SafeImage.vue'
 import type { ObservationSummary } from '../types/api'
 
 defineProps<{ observation: ObservationSummary }>()
@@ -14,7 +15,7 @@ function formattedTime(value: string) {
 
 <template>
   <RouterLink class="observation-card" :to="observation.detail_url">
-    <img :src="apiAssetUrl(observation.image_url)" alt="场景记忆缩略图" />
+    <SafeImage :src="apiAssetUrl(observation.image_url)" :alt="`${observation.title || '场景记忆'}缩略图`" />
     <div class="observation-card-body">
       <div class="observation-card-heading">
         <strong>{{ observation.title || '未命名场景' }}</strong>

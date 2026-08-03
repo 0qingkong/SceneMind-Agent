@@ -74,7 +74,7 @@ onMounted(loadObservation)
         <div class="summary-card">{{ observation.summary }}</div>
         <ObjectList :objects="observation.objects" />
         <RelationList :objects="observation.objects" :relations="observation.relations" />
-        <p class="trace">Engine: {{ observation.engine }}<br />{{ observation.id }}</p>
+        <p class="trace">分析器：{{ observation.engine }}<br />观察 ID：{{ observation.id }}</p>
       </section>
     </div>
   </section>

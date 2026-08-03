@@ -2,6 +2,7 @@
 import { apiAssetUrl } from '../api/client'
 import type { MemoryMatch } from '../types/api'
 import { predicateLabels } from '../utils/relationDisplay'
+import SafeImage from './SafeImage.vue'
 
 defineProps<{
   match: MemoryMatch
@@ -11,7 +12,7 @@ defineProps<{
 
 <template>
   <article class="memory-match-card" :class="{ prominent }">
-    <img :src="apiAssetUrl(match.observation.image_url)" alt="匹配场景缩略图" />
+    <SafeImage :src="apiAssetUrl(match.observation.image_url)" :alt="`${match.observation.title || '匹配场景'}缩略图`" />
     <div>
       <p v-if="prominent" class="eyebrow">LAST SEEN</p>
       <h3>{{ match.observation.title || '未命名场景' }}</h3>

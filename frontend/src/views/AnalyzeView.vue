@@ -89,16 +89,17 @@ onBeforeUnmount(clearPreview)
   <section>
     <div class="page-heading">
       <div><p class="eyebrow">SCENE ANALYSIS</p><h1>场景分析工作台</h1></div>
-      <span>Detect · Reason · Remember</span>
+      <span>检测 · 推理 · 记忆</span>
     </div>
 
     <div class="workspace-grid">
       <section class="workspace-panel">
         <h2>上传并建立场景记忆</h2>
+        <p class="panel-description">图片只会在你点击分析后发送至后端。请使用拥有许可的场景图片。</p>
         <label v-if="!previewUrl" class="upload-dropzone">
           <input type="file" accept="image/jpeg,image/png,image/webp" @change="handleFileChange" />
           <strong>点击选择图片</strong>
-          <small>JPG / PNG / WebP · Max 10 MB</small>
+          <small>JPG / PNG / WebP · 最大 10 MB</small>
         </label>
 
         <ImageStage
@@ -109,8 +110,8 @@ onBeforeUnmount(clearPreview)
         />
 
         <div class="scene-fields">
-          <input v-model="sceneTitle" maxlength="200" placeholder="场景标题（可选）" />
-          <input v-model="sceneLocation" maxlength="200" placeholder="位置（可选）" />
+          <label>场景标题<input v-model="sceneTitle" maxlength="200" placeholder="例如：实验室桌面（可选）" /></label>
+          <label>地点<input v-model="sceneLocation" maxlength="200" placeholder="例如：图书馆二层（可选）" /></label>
         </div>
         <div class="analysis-actions">
           <button class="secondary-button" :disabled="!canAnalyze" @click="handleAnalyze(false)">仅查看检测结果</button>
@@ -118,7 +119,7 @@ onBeforeUnmount(clearPreview)
             {{ isAnalyzing ? '正在检测与推理…' : '分析并保存到记忆' }}
           </button>
         </div>
-        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+        <div v-if="errorMessage" class="state-message state-error" role="alert"><p>{{ errorMessage }}</p><button class="secondary-button" :disabled="!canAnalyze" @click="handleAnalyze(false)">重试分析</button></div>
         <p v-if="savedObservation" class="success-message">
           已保存到场景记忆 · <RouterLink :to="savedObservation.detail_url">查看详情</RouterLink>
         </p>
@@ -130,14 +131,16 @@ onBeforeUnmount(clearPreview)
         <template v-if="result">
           <div class="summary-card">{{ result.scene_summary }}</div>
           <div class="metrics-row">
-            <div><strong>{{ result.objects.length }}</strong><small>Objects</small></div>
-            <div><strong>{{ result.image_width }}×{{ result.image_height }}</strong><small>Resolution</small></div>
-            <div v-if="savedObservation"><strong>已保存</strong><small>Memory</small></div>
-            <div v-else><strong>{{ result.latency_ms }}ms</strong><small>Latency</small></div>
+            <div><strong>{{ result.objects.length }}</strong><small>检测物体</small></div>
+            <div><strong>{{ result.image_width }}×{{ result.image_height }}</strong><small>图像分辨率</small></div>
+            <div v-if="savedObservation"><strong>已保存</strong><small>记忆状态</small></div>
+            <div v-else><strong>{{ result.latency_ms }}ms</strong><small>端到端耗时</small></div>
           </div>
+          <div class="analysis-meta"><span>分析器：{{ result.engine }}</span><span>最高置信度：{{ result.objects.length ? Math.round(Math.max(...result.objects.map((item) => item.confidence)) * 100) : 0 }}%</span><span>关系：{{ result.relations.length }} 条</span></div>
           <ObjectList :objects="result.objects" />
           <RelationList :objects="result.objects" :relations="result.relations" />
-          <p class="trace">Engine: {{ result.engine }}<br />{{ result.trace_id }}</p>
+          <p class="trace">分析追踪 ID：{{ result.trace_id }}</p>
+          <p class="boundary-note">二维关系仅来自边界框几何；类别检测不确认现实中的物体身份。</p>
         </template>
 
         <div v-else class="empty-result">
