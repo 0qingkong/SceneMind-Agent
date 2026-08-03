@@ -1,0 +1,33 @@
+.application { min-height: 100vh; padding-bottom: max(40px, var(--safe-bottom)); }
+.topbar, .page-container { width: min(var(--content-width), calc(100% - 36px)); }
+.topbar { padding-top: calc(var(--space-5) + var(--safe-top)); }
+.topbar, .global-demo-banner, .bottom-nav { isolation: isolate; }
+.global-demo-banner { padding-right: calc(var(--space-4) + var(--safe-right)); padding-left: calc(var(--space-4) + var(--safe-left)); }
+.desktop-nav a, .version-chip { transition: color .16s ease, border-color .16s ease, background .16s ease; }
+.desktop-nav a:hover { color: var(--color-text); background: var(--color-surface-muted); }
+.desktop-nav a.router-link-active { color: var(--color-brand-200); background: rgba(98, 232, 185, .09); }
+.brand-mark { border-color: var(--color-border-strong); color: var(--color-brand-200); background: rgba(98, 232, 185, .08); }
+.version-chip { color: var(--color-brand-200); }
+.primary-link, .primary-button { color: #04120e; background: linear-gradient(135deg, var(--color-brand-200), var(--color-brand-400)); box-shadow: 0 10px 30px rgba(54, 211, 157, .12); }
+.primary-link:hover, .primary-button:not(:disabled):hover { filter: brightness(1.04); transform: translateY(-1px); }
+.secondary-link, .secondary-button { border-color: var(--color-border); color: var(--color-text-secondary); background: var(--color-surface-muted); }
+.secondary-link:hover, .secondary-button:not(:disabled):hover { border-color: var(--color-border-strong); color: var(--color-text); }
+.primary-link, .secondary-link, .primary-button, .secondary-button, .danger-button { min-height: var(--control-height); transition: transform .16s ease, filter .16s ease, border-color .16s ease, background .16s ease; }
+.primary-button:disabled, .secondary-button:disabled, .danger-button:disabled { opacity: .42; }
+.workspace-panel, .capability-grid article, .observation-card, .memory-match-card, .agent-evidence-card, .session-create-card, .session-card, .device-card, .insight-card, .privacy-card, .system-card, .memory-empty {
+  border-color: var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-card);
+}
+.page-heading > span, .version-chip { border-color: var(--color-border); background: rgba(98, 232, 185, .05); }
+.eyebrow, .relation-statement span, .observation-location, .section-heading span { color: var(--color-brand-200); }
+.error-message, .danger-text { color: var(--color-danger); }
+.success-message { color: var(--color-success); }
+.warning-message, .planned-note { color: var(--color-warning); }
+.scene-fields input, .memory-search input, .agent-query input, .find-helper input, .session-form-grid input, .privacy-card input, .hud-agent input, .camera-options select, .simulator-toolbar select, .privacy-card select {
+  min-height: 44px; border-color: var(--color-border); color: var(--color-text); background: var(--color-surface-muted);
+}
+.scene-fields input:focus, .memory-search input:focus, .agent-query input:focus, .find-helper input:focus, .session-form-grid input:focus, .privacy-card input:focus, .hud-agent input:focus, select:focus { border-color: var(--color-brand-400); }
+.metrics-row small, .object-card small, .search-guidance, .retrieval-disclaimer, .relation-explanation, .trace { color: var(--color-text-muted); }
+.bottom-nav a { display: grid; min-height: 50px; place-items: center; gap: 2px; }
+.bottom-nav a > span { font-size: 17px; line-height: 1; }
+.bottom-nav a > small { font-size: 10px; font-weight: 750; }
+.bottom-nav a.router-link-active { color: #04120e; background: var(--color-brand-200); }
