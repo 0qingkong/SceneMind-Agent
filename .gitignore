@@ -40,6 +40,10 @@ backend/data/
 *.log
 .runtime/
 artifacts/ui-review/
+presentation/screenshots/*
+!presentation/screenshots/.gitkeep
+presentation/thumbnails/*
+!presentation/thumbnails/.gitkeep
 
 # TypeScript build artifacts
 *.tsbuildinfo
