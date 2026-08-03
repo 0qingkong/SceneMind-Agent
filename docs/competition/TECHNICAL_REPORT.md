@@ -4,6 +4,8 @@
 
 SceneMind is a local-first, evidence-backed spatial-memory agent for permitted multi-device visual capture. It combines real YOLO object detection, deterministic two-dimensional relation reasoning, persistent scene observations, foreground sequential sampling and a bounded tool-calling Agent. The competition MVP emphasizes a reliable closed loop and transparent limits: category retrieval does not establish physical-instance identity, image-plane relations do not establish depth, and the browser AI Glasses Simulator is not real hardware. Day 14 validates deterministic orchestration and failure recovery; Day 15 records a small synthetic baseline without claiming detector accuracy that was not measured.
 
+The competition demo and its speaker notes use one canonical sequence: problem, permitted multi-device visual capture, object detection, explainable 2D relations, persistent scene memory, grounded Agent query, evidence trace-back, continuous observation, the explicitly labeled AI Glasses Simulator, and measured evaluation/privacy boundaries. Exact actions, time boxes and Profile B/C recovery steps are maintained in [FINAL_DEMO_SCRIPT](../demo/FINAL_DEMO_SCRIPT.md).
+
 ## 1. Background and problem definition
 
 **Implemented product scope.** Existing detectors answer what appears in one image but do not by themselves provide durable “where and when was it last seen?” evidence. SceneMind defines the unit of memory as an Observation containing an original image, detected objects, directed image-plane relations, optional location/source and timestamp. Later retrieval returns that evidence rather than an unsupported textual guess.

@@ -1,5 +1,18 @@
 # SceneMind Agent
 
+## Competition demo narrative
+
+The release-candidate demonstration follows one canonical, evidence-backed story:
+
+```text
+problem -> permitted multi-device visual capture -> object detection
+-> explainable 2D relations -> persistent scene memory
+-> grounded Agent query -> evidence trace-back -> continuous observation
+-> AI Glasses Simulator -> evaluation and privacy boundaries
+```
+
+Use [the final demo script](docs/demo/FINAL_DEMO_SCRIPT.md) for the exact routes, time boxes and Profile B/C fallbacks. Profile B is the deterministic recording route only after team-owned real images and a local YOLO weight are approved; Profile C is the fully generated, visibly labeled Mock emergency route. Neither category retrieval nor repeated-label ordinals prove physical-object identity, and the simulator is not connected eyewear.
+
 > SceneMind：面向多设备视觉采集的证据化空间记忆智能体。
 
 SceneMind 将获准使用的场景图片转换为可检索的视觉记忆：检测物体、推导可解释的二维关系、保存时间与地点，并由受约束的 Agent 返回原始图片证据。它不是单纯的 YOLO 展示页，而是一条从感知到检索的完整产品闭环。
