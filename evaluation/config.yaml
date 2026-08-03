@@ -1,0 +1,12 @@
+version: 1
+analyzer_mode: mock
+confidence_threshold: 0.30
+image_size: 640
+warm_runs: 10
+api_timeout_seconds: 10
+manifests:
+  scenes: evaluation/manifests/scenes.example.jsonl
+  relations: evaluation/manifests/relation_annotations.example.csv
+  memory: evaluation/manifests/memory_queries.jsonl
+  agent: evaluation/manifests/agent_queries.jsonl
+  sessions: evaluation/manifests/session_sequences.example.jsonl
