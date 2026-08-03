@@ -6,9 +6,9 @@ Run `scripts/check-system.ps1`, start the chosen Profile with `-NoBrowser`, run 
 
 Profile routing:
 
-- **A:** camera + real YOLO; preferred only after target camera/HTTPS/model rehearsal.
-- **B:** licensed local image + real YOLO; fallback when camera/HTTPS is unreliable.
-- **C:** generated evidence + explicit Mock; fallback when real model/input is unavailable.
+- **Profile A:** camera + real YOLO; preferred only after target camera/HTTPS/model rehearsal.
+- **Profile B:** licensed local image + real YOLO; fallback when camera/HTTPS is unreliable.
+- **Profile C:** generated evidence + explicit Mock; fallback when real model/input is unavailable.
 
 ## 90-second sprint
 

@@ -91,6 +91,8 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 ## 9. Profile A / B / C
 
+Profile A 使用浏览器摄像头和真实 YOLO；Profile B 使用获准的本地图片和真实 YOLO；Profile C 使用显式 Mock 与生成式预置证据。
+
 | Profile | 输入 | 分析器 | 用途 |
 | --- | --- | --- | --- |
 | A | 浏览器摄像头 | 真实 YOLO | 目标硬件和 HTTPS 已验证后的完整演示 |

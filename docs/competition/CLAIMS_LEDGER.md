@@ -2,6 +2,8 @@
 
 Use this table during slides, demo and Q&A. “Implemented” means present in current code; “simulated” must always be disclosed; “measured” includes exact Day 15 evidence; “future” must not be phrased as current capability.
 
+Required simulator disclosure: **当前为浏览器端模拟，不代表已连接真实 AI 眼镜硬件。**
+
 | Claim | Status | Evidence | Allowed use | Prohibited wording |
 | --- | --- | --- | --- | --- |
 | Real YOLO object detection mode exists | Implemented; Day 15 real evaluation `not_run` | `YoloSceneAnalyzer`, analyze route, manual smoke procedure | “SceneMind supports explicit real YOLO mode” | “Our detector has proven production accuracy” |
