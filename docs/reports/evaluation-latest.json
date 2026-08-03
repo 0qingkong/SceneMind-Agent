@@ -1,4 +1,13 @@
 {
-  "status": "not_run",
-  "message": "Run backend/scripts/run_evaluation.py after completing the manual fields in backend/evaluation/cases.json. No benchmark result is claimed by this placeholder."
+  "reviewed_at": "2026-08-03",
+  "analyzer_mode": "mock",
+  "results": {
+    "processing": {"correct": 6, "total": 6, "detections_per_image": 3.0},
+    "relations": {"correct": 11, "total": 12, "overall_precision": 0.9167},
+    "memory": {"correct": 10, "total": 10},
+    "agent": {"correct": 17, "total": 18, "accuracy": 0.9444},
+    "sessions": {"correct": 6, "total": 6, "saved": 4}
+  },
+  "real_yolo": {"status": "not_run", "reason": "No licensed local real-image set was available."},
+  "methodology": "../EVALUATION.md"
 }

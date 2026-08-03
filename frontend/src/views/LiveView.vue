@@ -25,7 +25,7 @@ const saved = ref<ObservationDetail | null>(null)
 const title = ref('')
 const location = ref('')
 const findQuery = ref('')
-const showCameraIndicator = ref(loadPreferences().alwaysShowCameraIndicator)
+const showCameraIndicator = ref(true)
 
 const cameraActive = computed(() => cameraState.value === 'connected')
 const findState = computed(() => {
@@ -159,11 +159,12 @@ onBeforeUnmount(() => {
   <section>
     <div class="page-heading">
       <div><p class="eyebrow">LIVE LENS</p><h1>实时空间镜头</h1></div>
-      <span :class="{ 'camera-live-chip': cameraActive }">{{ cameraActive ? '● CAMERA ACTIVE' : 'Camera off' }}</span>
+      <span :class="{ 'camera-live-chip': cameraActive }">{{ cameraActive ? '● 摄像头使用中' : '摄像头未开启' }}</span>
     </div>
 
     <div class="workspace-grid live-workspace">
       <section class="workspace-panel">
+        <aside class="permission-note"><strong>启用前说明</strong><p>浏览器会在你点击后请求摄像头权限，仅抓取你主动分析的静态画面，不请求麦克风。</p></aside>
         <div class="live-stage">
           <video v-show="!frozenUrl" ref="video" autoplay muted playsinline></video>
           <ImageStage v-if="frozenUrl" :image-url="frozenUrl" :objects="result?.objects ?? []" :loading="busy" />
@@ -175,7 +176,7 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="camera-controls">
-          <button class="primary-button" :disabled="cameraState === 'connecting'" @click="connect">
+          <button class="primary-button" :disabled="cameraState === 'connecting' || busy" @click="connect">
             {{ cameraState === 'connecting' ? '正在连接…' : cameraState === 'connected' ? '重新连接' : '允许并开启摄像头' }}
           </button>
           <button class="secondary-button" :disabled="cameraState === 'disconnected'" @click="stopCamera">停止摄像头</button>
@@ -189,15 +190,15 @@ onBeforeUnmount(() => {
           </select>
         </div>
         <div class="scene-fields">
-          <input v-model="title" maxlength="200" placeholder="场景标题（可选）" />
-          <input v-model="location" maxlength="200" placeholder="位置（可选）" />
+          <label>场景标题<input v-model="title" maxlength="200" placeholder="例如：办公桌（可选）" /></label>
+          <label>地点<input v-model="location" maxlength="200" placeholder="例如：实验室（可选）" /></label>
         </div>
         <div class="analysis-actions">
-          <button class="secondary-button" :disabled="!cameraActive || busy" @click="capture(false)">抓拍并分析</button>
-          <button class="primary-button" :disabled="!cameraActive || busy" @click="capture(true)">抓拍、分析并记忆</button>
+          <button class="secondary-button" :disabled="!cameraActive || busy" @click="capture(false)">{{ busy ? '正在分析…' : '抓拍并分析' }}</button>
+          <button class="primary-button" :disabled="!cameraActive || busy" @click="capture(true)">{{ busy ? '正在处理…' : '抓拍、分析并记忆' }}</button>
         </div>
         <button v-if="frozenUrl" class="text-button" @click="returnToLive">返回实时画面</button>
-        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+        <div v-if="errorMessage" class="state-message state-error" role="alert"><p>{{ errorMessage }}</p><button class="secondary-button" @click="connect">重新连接</button></div>
         <p v-if="saved" class="success-message">已保存 · <RouterLink :to="saved.detail_url">打开记忆证据</RouterLink></p>
       </section>
 
@@ -211,12 +212,13 @@ onBeforeUnmount(() => {
         <template v-if="result">
           <div class="summary-card">{{ result.scene_summary }}</div>
           <div class="metrics-row">
-            <div><strong>{{ result.objects.length }}</strong><small>Objects</small></div>
-            <div><strong>{{ result.latency_ms }}ms</strong><small>Latency</small></div>
-            <div><strong>{{ result.engine }}</strong><small>Engine</small></div>
+            <div><strong>{{ result.objects.length }}</strong><small>检测物体</small></div>
+            <div><strong>{{ result.latency_ms }}ms</strong><small>分析耗时</small></div>
+            <div><strong>{{ result.engine }}</strong><small>分析器模式</small></div>
           </div>
           <ObjectList :objects="result.objects" />
           <RelationList :objects="result.objects" :relations="result.relations" />
+          <p class="boundary-note">二维关系不代表真实深度或物理距离；类别结果不用于身份识别。</p>
         </template>
         <div v-else class="empty-result"><strong>等待抓拍</strong><p>画面只会在你点击分析或会话采样时发送到后端。</p></div>
       </section>

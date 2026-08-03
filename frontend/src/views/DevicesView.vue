@@ -40,7 +40,7 @@ onMounted(load)
   <section>
     <div class="page-heading">
       <div><p class="eyebrow">DEVICE CENTER</p><h1>采集设备中心</h1></div>
-      <span>{{ cameras.length }} Cameras</span>
+      <span>{{ cameras.length }} 个摄像头</span>
     </div>
     <p class="retrieval-disclaimer">浏览器设备连接状态不会跨刷新保留；下方活动数据来自已保存记录。</p>
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
@@ -72,9 +72,9 @@ onMounted(load)
       </article>
     </div>
     <div v-if="stats" class="metrics-row device-metrics">
-      <div><strong>{{ stats.memory_count }}</strong><small>Memories</small></div>
-      <div><strong>{{ stats.session_count }}</strong><small>Sessions</small></div>
-      <div><strong>{{ stats.active_session_count }}</strong><small>Active</small></div>
+      <div><strong>{{ stats.memory_count }}</strong><small>空间记忆</small></div>
+      <div><strong>{{ stats.session_count }}</strong><small>观察会话</small></div>
+      <div><strong>{{ stats.active_session_count }}</strong><small>运行中会话</small></div>
     </div>
     <section v-if="stats?.sources.length" class="insight-card source-activity">
       <h2>持久化来源活动</h2>

@@ -1,272 +1,169 @@
 # SceneMind Agent
 
-SceneMind Agent 是一个面向移动端的多模态空间记忆产品。Day 13 在既有图片上传、实时镜头、低频观察会话和有证据 Agent 之上，增加比赛所需的一键启动、健康检查、应急演示数据与安全恢复工具。
+> SceneMind：面向多设备视觉采集的证据化空间记忆智能体。
 
-## 比赛一键运行
+SceneMind 将获准使用的场景图片转换为可检索的视觉记忆：检测物体、推导可解释的二维关系、保存时间与地点，并由受约束的 Agent 返回原始图片证据。它不是单纯的 YOLO 展示页，而是一条从感知到检索的完整产品闭环。
 
-首次准备（不会覆盖已有 `.env`，也不会自动下载 YOLO 权重）：
+## 1. 界面预览
+
+自动化评审会在被 Git 忽略的 `artifacts/ui-review/` 生成桌面和手机截图。正式材料的画面清单、状态要求与复现步骤见[截图计划](docs/competition/SCREENSHOT_PLAN.md)。这样既保留可复现性，也避免把每次运行产物提交到仓库。
+
+## 2. 用户痛点
+
+人们常常记得“见过某个物品”，却想不起最后一次出现的时间、地点和周围环境。普通目标检测只回答当前图片中有什么；SceneMind 进一步保存证据，使之后的查询仍可回到原始场景。
+
+## 3. 核心能力
+
+- 使用 Ultralytics YOLO 执行真实多目标检测；初始化或推理失败会明确返回 `503`，不会静默切换到 Mock。
+- 基于归一化边界框推导 `left/right`、`above/below`、`near`、`overlaps`、`inside/contains` 二维关系。
+- 将图片、物体、关系、地点、来源与时间保存为 Observation。
+- 按类别执行 Last-Seen、History 与最近观察检索，并返回原图证据。
+- 使用确定性 Planner 和只读工具回答限定范围内的自然语言问题。
+- 支持图片上传、浏览器摄像头静帧和明确标记的 AI Glasses Simulator。
+- 支持前台低频连续观察会话及可解释的选择性保存策略。
+
+## 4. 产品工作流
+
+```text
+多设备视觉采集
+  -> 目标检测
+  -> 二维空间关系
+  -> 场景记忆
+  -> Last-Seen / History
+  -> 证据化 Agent 回答
+```
+
+类别匹配不等于确认同一现实物体；二维关系不等于真实深度或物理距离。
+
+## 5. 系统架构
+
+```mermaid
+flowchart LR
+  UI[Vue 3 / PWA] --> API[FastAPI /api/v1]
+  API --> A[Analyzer]
+  API --> R[Spatial Reasoner]
+  API --> M[Memory + Agent + Session]
+  M --> DB[(SQLite)]
+  M --> FS[(Local image storage)]
+```
+
+完整组件边界、数据流和设备适配器图见[架构文档](docs/ARCHITECTURE.md)。
+
+## 6. 页面展示
+
+| 页面 | 作用 |
+| --- | --- |
+| 首页 | 价值主张、四步闭环、最近证据与真实评估摘要 |
+| 实时镜头 | 用户授权后连接浏览器摄像头，捕获静帧并分析或保存 |
+| 场景分析 | 上传图片，查看边界框、物体、关系与推理元数据 |
+| 空间记忆 | 搜索、筛选、查看和删除持久化 Observation |
+| Agent | 查询 Last-Seen、History、详情、数量及最近观察 |
+| 观察会话 | 前台顺序采样、语义变化策略、计数与保存原因 |
+| 设备 / 洞察 | 展示真实持久化来源与 SQL 聚合统计 |
+| AI 眼镜模拟器 | 浏览器端未来设备交互预览，不代表真实硬件连接 |
+
+## 7. 技术栈
+
+- 前端：Vue 3、TypeScript、Vite、Vue Router、Playwright
+- 后端：FastAPI、Pydantic、SQLAlchemy、SQLite、Pillow
+- 视觉：Ultralytics YOLO，默认配置 `yolo26n.pt`
+- 存储：SQLite 元数据与 UUID 文件名的本地图片目录
+- 自动化：pytest、Node capture tests、PowerShell smoke/failure/integrity 脚本
+
+## 8. 快速启动
+
+环境要求：Windows PowerShell、Python 3.11+、Node.js 20.19+ 或 22.12+。
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\scripts\check-system.ps1
 .\scripts\setup.ps1
-```
-
-选择演示 Profile：
-
-```powershell
-# A：摄像头 + 真实 YOLO + 持久化 + Agent
-.\scripts\start-demo.ps1 -Profile A
-
-# B：本地许可图片 + 真实 YOLO + 持久化 + Agent
-.\scripts\start-demo.ps1 -Profile B
-
-# C：无摄像头、无实时 YOLO 的应急证据演示
 .\scripts\start-demo.ps1 -Profile C
 ```
 
-停止时只读取 SceneMind 自己的 PID 元数据，不会批量结束 Python/Node：
+停止时只会处理经过 PID 元数据校验的 SceneMind 子进程：
 
 ```powershell
 .\scripts\stop-demo.ps1
 ```
 
-运行日志位于忽略的 `.runtime\logs`。完整现场流程见 [Demo Runbook](docs/DEMO_RUNBOOK.md)，故障恢复见 [Recovery](docs/RECOVERY.md)。
+默认入口为 `http://127.0.0.1:5173`，API 文档为 `http://127.0.0.1:8000/docs`。完整安装、CPU/CUDA 与故障处理见[部署指南](docs/DEPLOYMENT.md)和[恢复手册](docs/RECOVERY.md)。
 
-## 技术栈
+## 9. Profile A / B / C
 
-- 前端：Vue 3、TypeScript、Vite、Vue Router
-- 后端：FastAPI、Pydantic、Pillow
-- 检测器：Ultralytics YOLO（默认 `yolo26n.pt`）
-- 空间推理：确定性归一化边界框几何规则
-- 场景记忆：SQLite 元数据 + 本地文件系统图片
-- 记忆 Agent：确定性意图规划 + 只读工具 + 证据约束回答
-- 多来源采集：上传、浏览器摄像头、明确标记的 AI Glasses Simulator
-- 连续观察：前台低频顺序采样，不传输连续视频或音频
-- API 前缀：`/api/v1`
+Profile A 使用浏览器摄像头和真实 YOLO；Profile B 使用获准的本地图片和真实 YOLO；Profile C 使用显式 Mock 与生成式预置证据。
 
-## 后端安装与启动
+| Profile | 输入 | 分析器 | 用途 |
+| --- | --- | --- | --- |
+| A | 浏览器摄像头 | 真实 YOLO | 目标硬件和 HTTPS 已验证后的完整演示 |
+| B | 获准使用的本地图片 | 真实 YOLO | 无摄像头时的真实检测演示 |
+| C | 生成式预置证据 | 显式 Mock | 无相机或模型时的确定性应急演示 |
 
-需要 Python 3.11+。在仓库根目录运行：
+Profile C 的 Mock 结果只证明产品编排，不代表 YOLO 准确率；全局横幅和数据标记会持续披露其状态。
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
-cd backend
-..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
-```
+## 10. 手机与摄像头
 
-后端地址：
+摄像头只在用户明确点击后请求，约束始终包含 `audio: false`。`localhost` 可在本机作为安全上下文；物理手机通过局域网地址访问时通常需要可信 HTTPS。SceneMind 只提交压缩静帧，不传输连续视频或音频；页面隐藏时默认暂停，后台运行不作保证。详见[用户指南](docs/USER_GUIDE.md)和[部署指南](docs/DEPLOYMENT.md)。
 
-- API 文档：http://127.0.0.1:8000/docs
-- 健康检查：http://127.0.0.1:8000/api/v1/health
-- 就绪检查：http://127.0.0.1:8000/api/v1/ready
-- 分析接口：`POST http://127.0.0.1:8000/api/v1/analyze`
-- 场景观察：`/api/v1/observations`
-- 最近出现：`GET /api/v1/memory/last-seen?q=杯子`
-- 历史记录：`GET /api/v1/memory/history?q=cup`
-- 记忆 Agent：`POST /api/v1/agent/query`
-- 观察会话：`/api/v1/capture-sessions`
-- 设备统计：`GET /api/v1/devices/stats`
-- 记忆洞察：`GET /api/v1/insights`
-- JSON 导出：`GET /api/v1/privacy/export`
-
-首次执行真实推理时，Ultralytics 可能联网下载 `yolo26n.pt` 权重，因此第一次请求会明显更慢。权重、`runs/` 和上传图片已被 Git 忽略，不应提交。
-
-## 检测器配置
-
-后端直接读取以下环境变量；`.env.example` 给出了默认配置。
-
-| 变量 | 默认值 | 说明 |
-| --- | --- | --- |
-| `ANALYZER_MODE` | `yolo` | 使用 `yolo` 真实检测；可设为 `mock` 使用固定演示数据 |
-| `YOLO_MODEL` | `yolo26n.pt` | Ultralytics 模型名或本地权重路径 |
-| `YOLO_CONF` | `0.30` | 最低置信度，范围 0 到 1 |
-| `YOLO_IMGSZ` | `640` | 推理输入尺寸 |
-| `YOLO_MAX_DET` | `30` | 单张图片最大检测数 |
-| `YOLO_DEVICE` | `auto` | `auto`、`cpu`、CUDA 设备编号或 Ultralytics 支持的设备值 |
-
-`YOLO_DEVICE=auto` 时，后端使用 `torch.cuda.is_available()` 自动选择 `cuda:0`，否则使用 CPU。健康检查不会触发模型加载；首次推理成功后会报告实际设备。YOLO 模式出错时接口返回明确的 `503`，不会静默回退到 Mock。
-
-PowerShell 临时切换 Mock 示例：
+## 11. API 示例
 
 ```powershell
-$env:ANALYZER_MODE = "mock"
-..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+Invoke-RestMethod "http://127.0.0.1:8000/api/v1/ready"
+Invoke-RestMethod "http://127.0.0.1:8000/api/v1/memory/last-seen?q=cup"
+Invoke-RestMethod -Method Post -ContentType "application/json" `
+  -Body '{"query":"我的杯子最后出现在哪里？"}' `
+  "http://127.0.0.1:8000/api/v1/agent/query"
 ```
 
-## 空间推理配置
+上传、Observation、会话、设备、洞察、导出与错误契约见[API 文档](docs/API.md)。
 
-空间推理独立于检测器，因此 Mock 和 YOLO 使用完全相同的关系规则。
+## 12. Day 14 可靠性结果
 
-| 变量 | 默认值 | 说明 |
-| --- | --- | --- |
-| `SPATIAL_ENABLED` | `true` | 设为 `false` 时保留检测结果并返回空关系列表 |
-| `SPATIAL_NEAR_THRESHOLD` | `0.25` | 归一化图像平面中的中心点距离阈值 |
-| `SPATIAL_OVERLAP_IOU_THRESHOLD` | `0.05` | 生成重叠关系的最小 IoU |
-| `SPATIAL_CONTAINMENT_THRESHOLD` | `0.90` | 内框与外框相交面积占内框面积的最小比例 |
-| `SPATIAL_AXIS_SEPARATION_THRESHOLD` | `0.08` | 水平或垂直中心分离的最小阈值 |
-| `SPATIAL_MAX_RELATIONS` | `80` | 确定性排序后保留的最大关系数量 |
+Day 14 在隔离数据库和 Mock 推理下验证了完整 API 生命周期、六条浏览器核心流程、受控故障和数据库/文件完整性。Profile A、Profile B、物理手机与真实 AI 眼镜不在该自动化结果内。依据：[测试计划](docs/TEST_PLAN.md)与[测试报告](docs/TEST_REPORT.md)。
 
-支持的谓词为 `left_of`、`right_of`、`above`、`below`、`near`、`overlaps`、`inside` 和 `contains`。关系分数是“较低检测置信度 × 几何强度”：轴向关系使用中心分离量，靠近使用阈值内的反向距离，重叠使用 IoU，包含使用内框覆盖比例。它不是学习模型概率。
+## 13. Day 15 正式评估结果
 
-这些关系只描述二维图像平面，不能证明物理支撑、真实深度或厘米距离，因此不会生成 `on`、`in_front_of`、`behind` 等谓词。
-
-## 场景记忆与检索
-
-“分析并记忆”只执行一次检测：共享分析服务完成图片校验、目标检测和空间推理，随后将观察快照事务性写入 SQLite，并将原图保存到文件系统。数据库保存相对图片路径，不保存图片字节，也不会向 API 暴露绝对路径。
-
-| 变量 | 默认值 | 说明 |
-| --- | --- | --- |
-| `DATABASE_URL` | `sqlite:///./data/scenemind.db` | SQLAlchemy 数据库地址 |
-| `SCENE_STORAGE_DIR` | `./data/images` | 场景图片目录 |
-| `OBSERVATION_DEFAULT_LIMIT` | `20` | 观察列表默认页大小 |
-| `OBSERVATION_MAX_LIMIT` | `100` | 观察列表最大页大小 |
-| `MEMORY_HISTORY_DEFAULT_LIMIT` | `20` | 历史检索默认页大小 |
-| `MEMORY_HISTORY_MAX_LIMIT` | `100` | 历史检索最大页大小 |
-| `MEMORY_RELATION_CONTEXT_LIMIT` | `8` | 单条检索结果的最大关系上下文数 |
-| `AGENT_DEFAULT_LIMIT` | `3` | Agent 列表类查询的默认结果数 |
-| `AGENT_MAX_LIMIT` | `20` | Agent 单次查询允许的最大结果数 |
-| `DEMO_MODE` | `false` | 启动时幂等添加带明显标记的生成式演示观察 |
-| `CAPTURE_DEFAULT_INTERVAL_SECONDS` | `5` | 新会话默认采样间隔 |
-| `CAPTURE_MIN_INTERVAL_SECONDS` | `3` | 最小采样间隔 |
-| `CAPTURE_MAX_INTERVAL_SECONDS` | `60` | 最大采样间隔 |
-| `CAPTURE_MIN_SAVE_GAP_SECONDS` | `15` | 无其他变化时允许周期保存的最小间隔 |
-| `CAPTURE_OBJECT_COUNT_DELTA` | `2` | 触发保存的物体数量差 |
-| `CAPTURE_MAX_SESSION_MINUTES` | `60` | 单会话最大持续时间 |
-
-观察 API：
-
-- `POST /api/v1/observations`：multipart 字段 `file`、可选 `title` 和 `location`
-- `GET /api/v1/observations`：支持 `limit`、`offset`、`label` 和 `q`
-- `GET /api/v1/observations/{id}`：恢复完整观察快照
-- `GET /api/v1/observations/{id}/image`：安全读取已保存图片
-- `DELETE /api/v1/observations/{id}`：删除观察、子记录和图片
-
-最近出现查询是标签检索，不是跨图片身份跟踪。“最近一次检测到杯子”只表示最新观察包含匹配的 `cup/杯子` 标签，不表示它是现实中的同一个杯子。`last-seen` 无匹配时返回 404；`history` 无匹配时返回空列表。
-
-删除时图片先原子移动到待删除文件，数据库提交成功后再清理；数据库失败会恢复图片。如果最终文件清理失败，API 会明确报错，数据库记录已经删除，隐藏的待删除文件需要运维清理。
-
-SQLite 和本地文件系统是比赛 MVP 基础设施。以后可以替换为 PostgreSQL 和对象存储；当前数据量与查询模式不需要向量数据库或图数据库。
-
-## Grounded Memory Agent
-
-`POST /api/v1/agent/query` 接收：
-
-```json
-{"query":"我的杯子最后出现在哪里？"}
-```
-
-Agent 支持最后出现、历史场景、最近观察、指定记录详情、物体检测数量、帮助和未知问题七类意图。规划器不调用外部大模型；工具只包装现有 Memory/Observation 服务。响应包含意图、回答、折叠工具轨迹、证据卡和限制声明。无匹配或超出范围时不会猜测。
-
-类别检索不证明跨图片是同一个现实物体，二维关系也不证明真实深度或物理距离。相关回答会明确显示这些限制。
-
-## Demo Mode
-
-演示数据默认关闭：
-
-```powershell
-$env:DEMO_MODE="true"
-cd backend
-..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
-```
-
-启用后添加项目代码生成的桌面、教室、图书馆和低频会话证据。固定 ID 与持久化 `is_demo` 标记保证重复启动不会重复写入；前端徽标和全局横幅会显示“演示数据”。已有真实记录永远不会被覆盖。推荐通过包装脚本管理：
-
-```powershell
-.\scripts\seed-demo.ps1
-.\scripts\seed-demo.ps1
-.\scripts\reset-demo.ps1 -ConfirmReset
-```
-
-第二次 seed 会报告全部跳过。reset 只选择 Demo 标记或兼容的 `demo-seed` 旧记录，并保留用户数据。
-
-## 文档与评估
-
-- [架构](docs/ARCHITECTURE.md)
-- [3–5 分钟演示脚本](docs/DEMO_SCRIPT.md)
-- [评估方法](docs/EVALUATION.md)
-- [部署](docs/DEPLOYMENT.md)
-- [竞赛摘要](docs/COMPETITION_SUMMARY.md)
-
-Day 15 的正式评测不会把未测数据误报为通过，也不会混合 Mock 与 YOLO 指标。运行 `.\scripts\run-evaluation.ps1 -Module all -AnalyzerMode mock` 会验证清单并在忽略的 `.runtime\evaluation` 下生成环境、五个模块结果、失败案例、摘要和 Markdown 报告。详见 [正式评测](docs/EVALUATION.md) 与 [已知限制](docs/LIMITATIONS.md)。
-
-## 前端安装与启动
-
-需要 Node.js 20.19+ 或 22.12+。打开另一个 PowerShell：
-
-```powershell
-cd frontend
-npm install
-npm run dev
-```
-
-打开 http://localhost:5173，进入场景分析页，选择 JPG、PNG 或 WebP 图片后开始分析。前端使用 API 返回的 `[x1, y1, x2, y2]` 归一化坐标绘制边界框，并以中文展示二维关系和几何强度。
-
-实时镜头位于 `/live`。摄像头权限只能在用户明确点击后请求，约束始终为 `audio: false`。构建期压缩配置：
-
-| 变量 | 默认值 |
+| 能力 | 实际结果 |
 | --- | --- |
-| `VITE_CAPTURE_IMAGE_TYPE` | `image/jpeg` |
-| `VITE_CAPTURE_JPEG_QUALITY` | `0.88` |
-| `VITE_CAPTURE_MAX_WIDTH` | `1600` |
+| Memory | 10 / 10 精确 Observation ID；排序、证据可用性、重启持久性均 100% |
+| Agent | 17 / 18 意图、参数、工具与证据匹配，94.44% |
+| Relation | 11 / 12 人工审阅正确，91.67% overall precision |
+| Session | 6 / 6 保存/跳过决策正确；4 / 6 保存 |
+| Mock processing | 6 / 6 成功，3.0 detections/image |
+| Real YOLO | `not_run`：评估环境没有获准使用的本地真实图片集 |
 
-手机摄像头通常要求受信任 HTTPS。`http://localhost` 只适用于运行浏览器的本机；物理手机访问电脑局域网 IP 时应使用受信任的 HTTPS 反向代理或开发证书。浏览器拒绝权限、设备占用或不安全上下文时页面会显示明确错误。
+样本规模较小，不应外推为总体性能；没有边界框真值，因此不声称 mAP、recall 或 F1。依据：[评估方法与结果](docs/EVALUATION.md)和[竞赛摘要](docs/COMPETITION_SUMMARY.md)。
 
-## 低频观察会话
+## 14. 隐私与可信边界
 
-`/sessions` 创建持久化会话，`/sessions/{id}` 明确连接摄像头并使用单一 awaited loop 顺序采样。页面隐藏时默认暂停；停止或离开页面会释放全部 MediaStream track 和 Screen Wake Lock。浏览器可能冻结后台标签页，因此产品不承诺后台持续采集。
+- 相机激活指示不可关闭；权限只由用户操作触发。
+- 本地 MVP 默认使用 SQLite 与本地图片目录，不包含云同步或账号系统。
+- JSON 导出不包含图片字节和服务器绝对路径。
+- Demo 数据使用确定性 ID 和显式标记，可幂等播种并安全清除，不覆盖真实记录。
+- 加密、自动保留期清理、人脸模糊、认证和生产级云隔离尚未实现。
 
-`meaningful-change` 策略在首个有效样本、目标首次出现、标签多重集合变化、显著物体数量变化、最小保存间隔到达或用户强制保存时保存观察。`manual` 只响应强制保存，`every-analyzed-sample` 保存每个成功分析样本。检测器每个样本只调用一次。
+处理真实内容前请阅读[隐私说明](docs/PRIVACY.md)。
 
-## 设备、模拟器、洞察与隐私
+## 15. 已知限制
 
-- `/devices` 合并当前浏览器实际枚举的摄像头与后端持久化来源统计，不声称刷新后仍连接。
-- `/glasses` 明确标记为 **AI Glasses Simulator / 未来设备交互预览**，不包含厂商 SDK，也不代表真实眼镜连接。
-- `/insights` 使用 SQL 聚合真实 Observation/CaptureSession 数据；空数据库显示真实空状态。
-- `/privacy` 将非敏感 UI 偏好保存在 localStorage，并支持暂停前端连续采集及 JSON 元数据导出。
-- 保留天数自动清理、加密和人脸模糊均未实现；相关界面不会声称已经生效。
+SceneMind 不执行人脸识别、跨图片现实物体身份确认、真实深度估计、厘米距离测量、开放域聊天、连续视频/音频录制、后台可靠采集或商用眼镜 SDK 集成。SQLite 和本地文件存储面向单机竞赛 MVP。完整清单见[限制说明](docs/LIMITATIONS.md)。
 
-## 检查
+## 16. AI 眼镜扩展路线
 
-```powershell
-cd backend
-..\.venv\Scripts\python.exe -m pytest tests -q
+当前 `GlassesSimulatorSource` 只预览交互协议。未来可在不改变 Observation 与 Agent 契约的前提下增加 Android XR、厂商 Wearable SDK 或自定义硬件适配器；这些均是路线图，不是当前能力。详见[设备适配器](docs/DEVICE_ADAPTERS.md)。
 
-cd ..\frontend
-npm run build
-npm run test:capture
+## 17. 文档索引
 
-cd ..
-.\scripts\check-system.ps1
-.\scripts\start-demo.ps1 -Profile C -NoBrowser
-.\scripts\smoke-demo.ps1
-.\scripts\stop-demo.ps1
-```
+- 开发与运行：[贡献指南](docs/CONTRIBUTING.md)、[部署](docs/DEPLOYMENT.md)、[Demo Runbook](docs/DEMO_RUNBOOK.md)、[恢复](docs/RECOVERY.md)、[离线包](docs/OFFLINE_PACKAGE.md)
+- 系统契约：[架构](docs/ARCHITECTURE.md)、[API](docs/API.md)、[设备适配器](docs/DEVICE_ADAPTERS.md)、[隐私](docs/PRIVACY.md)
+- 质量证据：[测试报告](docs/TEST_REPORT.md)、[正式评估](docs/EVALUATION.md)、[竞赛摘要](docs/COMPETITION_SUMMARY.md)
+- 竞赛材料：[PPT 源稿](docs/competition/PITCH_DECK.md)、[技术报告](docs/competition/TECHNICAL_REPORT.md)、[演示脚本](docs/competition/DEMO_SCRIPT.md)、[评委问答](docs/competition/JUDGE_QA.md)
+- 项目记录：[项目状态](docs/PROJECT_STATE.md)、[架构决策](docs/DECISIONS.md)、[变更日志](docs/CHANGELOG.md)
 
-## Day 14 deterministic validation
+## 18. 参与贡献
 
-The resilience suite uses isolated databases, image storage, ports, and Mock inference:
+请从最新 `main` 创建 `feature/*` 分支，保持 API 兼容、增加对应测试，并确保运行时数据库、图片、权重、日志和构建产物未被跟踪。具体流程见[贡献指南](docs/CONTRIBUTING.md)。
 
-```powershell
-.\scripts\e2e-test.ps1
-.\scripts\failure-test.ps1
-.\scripts\data-integrity-test.ps1
-```
+## 19. License
 
-Use `-SkipBrowser` when Edge/Playwright is unavailable, `-KeepRuntime` to retain fixtures, and `-Json` for machine-readable output. Artifacts stay under ignored `.runtime\test-results`. See [TEST_PLAN](docs/TEST_PLAN.md) and [TEST_REPORT](docs/TEST_REPORT.md).
-
-## Day 15 formal evaluation
-
-```powershell
-.\scripts\run-evaluation.ps1 -Module all -AnalyzerMode mock
-.\scripts\run-evaluation.ps1 -Module memory -Json
-.\scripts\run-evaluation.ps1 -Module agent -Json
-```
-
-The committed data is small and synthetic: six scenes, twelve manually reviewed predicted relations, ten memory queries, eighteen Agent questions, and six session frames. The real YOLO and hardware evaluations remain `not_run` until permitted assets/devices are supplied. No detection mAP, recall, or F1 is claimed without bounding-box ground truth.
-
-## 当前范围
-
-Day 9–12 增加浏览器摄像头、多来源低频会话、设备中心、明确标记的眼镜模拟器、真实数据洞察和本地隐私偏好。真实商业眼镜集成、后台 Service Worker 摄像头、麦克风录制、跨图身份跟踪、开放领域聊天、深度估计、加密和人脸模糊不属于本次 MVP。
+仓库当前未提交统一的源代码许可文件；未经权利人授权不得假定可以再分发。模型权重、演示图片、第三方依赖及比赛材料也可能具有各自许可，离线分发前必须逐项核验。

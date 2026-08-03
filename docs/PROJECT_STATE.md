@@ -8,6 +8,14 @@ Competition submission deadline: 2026-08-08.
 
 ## Completed
 
+### Day 16-18 - Product and competition release package
+
+- Unified tokens, app shell, responsive navigation, safe areas and accessibility states
+- Polished eleven core pages and added four-viewport browser/UI screenshot validation
+- Completed README, architecture, API, deployment, adapters, privacy and operator documentation
+- Added evidence-aligned pitch, technical report, scripts, Q&A, claims and submission material
+- Added automated release-document and repository consistency validation
+
 ### Day 15 - Formal reproducible evaluation
 
 - One-command, JSON-capable detection/relation/memory/Agent/session harness

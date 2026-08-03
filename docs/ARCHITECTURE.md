@@ -1,68 +1,138 @@
 # SceneMind Architecture
 
-## System overview
+Last reviewed: 2026-08-03. This document describes the implemented local-first competition MVP.
 
-SceneMind is a local-first competition MVP with a Vue 3 frontend and a FastAPI backend. SQLite stores structured observation metadata; original images use UUID filenames under a configured storage root. The API never returns filesystem paths.
+## System architecture
 
-```text
-Vue /analyze ──multipart──> AnalysisService ──> SceneAnalyzer (YOLO or explicit Mock)
-                                  │
-                                  └──> SpatialReasoner (deterministic 2D geometry)
-                                            │
-Vue /memory <──JSON/image── ObservationService ──> SQLite + image storage
-                                            │
-Vue /agent  <──evidence──── AgentExecutor ──> MemoryService / repository
-                         planner -> tools -> formatter
-Vue /live ──compressed still frames──> AnalysisService / ObservationService
-Vue /sessions ──sequential samples──> CaptureSessionService ──> policy + observations
-Vue /devices + /insights ──JSON──> DashboardService ──> SQL aggregation
+```mermaid
+flowchart TB
+  subgraph Client[Vue 3 / TypeScript PWA]
+    Upload[Image upload]
+    Camera[Browser camera]
+    Simulator[AI Glasses Simulator]
+    Views[Memory / Agent / Sessions / Insights]
+  end
+  subgraph API[FastAPI /api/v1]
+    Analysis[AnalysisService]
+    Analyzer[SceneAnalyzer: YOLO or explicit Mock]
+    Spatial[SpatialReasoner]
+    Observation[ObservationService]
+    Memory[MemoryService]
+    Agent[Agent Planner + read-only tools]
+    Session[CaptureSessionService]
+    Dashboard[DashboardService]
+  end
+  DB[(SQLite metadata)]
+  Images[(UUID image storage)]
+  Upload --> Analysis
+  Camera --> Analysis
+  Simulator --> Analysis
+  Views --> Memory
+  Views --> Agent
+  Views --> Session
+  Views --> Dashboard
+  Analysis --> Analyzer
+  Analysis --> Spatial
+  Analysis --> Observation
+  Observation --> DB
+  Observation --> Images
+  Memory --> DB
+  Agent --> Memory
+  Session --> Analysis
+  Session --> Observation
+  Dashboard --> DB
 ```
 
-## Backend boundaries
+The API never returns server filesystem paths. Bounding boxes are normalized `[x1, y1, x2, y2]` values clamped to `[0, 1]`.
 
-- `services/analyzers`: lazy YOLO and explicit Mock implementations behind `SceneAnalyzer`.
-- `AnalysisService`: upload size, MIME, decode and dimension validation; runs detection and spatial reasoning once.
-- `services/spatial`: normalized-box geometry only. It does not infer depth or physical distance.
-- `ObservationService`: transaction-aware save, read and delete behavior.
-- `MemoryService`: newest-first category retrieval with stable repeated-object numbering.
-- `agent`: deterministic intent plan, read-only structured tools, grounded formatter and response schemas. It is not open-domain chat.
-- `DemoDataService`: optional generated sample observations marked by `engine=demo-seed`; fixed IDs make seeding idempotent.
-- `CaptureSessionService`: persistent lifecycle, per-session non-overlap lock, one inference per sample, save policy and transactional counters.
-- `DashboardService`: device activity, insight aggregation and path-free JSON metadata export.
+## Core data flow
 
-## Shared capture sources
+```mermaid
+flowchart LR
+  Source[CaptureSource] --> Analyze[Validate + Analyze]
+  Analyze --> Graph[Object / Relation graph]
+  Graph --> Snapshot[Observation transaction]
+  Snapshot --> DB[(SQLite)]
+  Snapshot --> Image[(Original image)]
+  DB --> Tool[Last-Seen / History tools]
+  Image --> Evidence[Evidence card]
+  Tool --> Answer[Grounded answer]
+  Evidence --> Answer
+```
 
-The frontend `CaptureSource` contract exposes `connect`, `disconnect`, `captureFrame`, `listDevices` and `switchDevice`. Browser camera constraints always set `audio: false`. A source owns at most one stream, shares an in-flight connection promise, and stops every track on disconnect/error/unmount. Canvas capture scales the current frame to a configurable maximum width and emits a compressed image; the backend never receives the continuous video stream.
+`AnalysisService` validates size, MIME, decode and dimensions before inference. A real analyzer failure stays visible as `503`; Mock is selected only by explicit configuration. `SpatialReasoner` uses deterministic image-plane geometry and cannot infer physical distance or depth.
 
-There is no PWA Service Worker camera path. Continuous capture is a foreground, low-frequency awaited loop. Visibility pause and Wake Lock handling improve demo reliability without claiming background execution.
+## Continuous observation
 
-## Data model
+```mermaid
+stateDiagram-v2
+  [*] --> Created
+  Created --> Active: create session
+  Active --> Sample: foreground timer
+  Sample --> Analyze: one awaited inference
+  Analyze --> Save: first frame / meaningful change / forced
+  Analyze --> Skip: unchanged / manual mode
+  Save --> Active: update counters and evidence
+  Skip --> Active: update counters and reason
+  Active --> Paused: page hidden
+  Paused --> Active: visible
+  Active --> Stopped: user stop / leave / limit
+  Active --> Failed: explicit error
+  Stopped --> [*]
+  Failed --> [*]
+```
 
-An `Observation` owns `ObservedObject` and `ObservedRelation` rows with delete cascades. Object and relation IDs are scoped to one observation. Bounding boxes stay normalized as `[x1, y1, x2, y2]`. Image paths stored in SQLite are relative to `SCENE_STORAGE_DIR`.
+Sampling is low frequency and foreground-only. The frontend owns the MediaStream and stops all tracks on disconnect, error and unmount. The backend serializes samples per session, calls the analyzer once per sample, and commits counters with an optional Observation.
 
-Optional Observation source fields record source type, browser device identifiers/names, capture time and capture-session ID. `CaptureSession` stores lifecycle state, interval, target state, counters, previous label multiset and last save/sample timestamps. Deleting a stopped session detaches its observations rather than deleting memory evidence.
+## Device adapter boundary
 
-The API derives `is_demo` from the trusted engine marker rather than requiring a schema migration. Demo reset selects only that marker and leaves all real-engine rows untouched.
+```mermaid
+classDiagram
+  class CaptureSource {
+    +connect()
+    +disconnect()
+    +captureFrame()
+    +listDevices()
+    +switchDevice()
+  }
+  CaptureSource <|.. UploadCaptureSource
+  CaptureSource <|.. BrowserCameraSource
+  CaptureSource <|.. GlassesSimulatorSource
+  CaptureSource <|.. AndroidXRAdapter
+  CaptureSource <|.. WearableSDKAdapter
+  CaptureSource <|.. CustomHardwareAdapter
+  note for UploadCaptureSource "implemented"
+  note for BrowserCameraSource "implemented; audio false"
+  note for GlassesSimulatorSource "implemented browser simulator"
+  note for AndroidXRAdapter "future adapter"
+  note for WearableSDKAdapter "future adapter"
+  note for CustomHardwareAdapter "future adapter"
+```
+
+Future adapters must preserve the capture contract and source metadata; the diagram does not claim current Android XR, vendor SDK or custom-hardware integration.
+
+## Persistence model
+
+An `Observation` owns `ObservedObject` and `ObservedRelation` rows with delete cascades. Object and relation identifiers are scoped to one Observation. SQLite stores only a relative image path; bytes live under `SCENE_STORAGE_DIR`. Optional source fields record capture type, browser device metadata, capture time, session identifier and save reason.
+
+`CaptureSession` stores lifecycle state, interval, target state, counters, previous label multiset and latest sample/save timestamps. Deleting a stopped session detaches its observations so memory evidence is preserved. Demo rows have deterministic IDs and durable demo markers; reset selects only marked data.
 
 ## Agent grounding
 
 ```text
-query
-  -> AgentPlanner: one supported intent + bounded arguments
-  -> AgentTools: existing memory/repository calls, structured data only
-  -> AgentExecutor: tool trace + evidence cards
-  -> formatter: answer constrained to returned evidence
+question -> deterministic intent -> bounded read-only tool -> structured result
+         -> evidence-constrained formatter -> answer + trace + evidence + limits
 ```
 
-Supported intents are `last_seen`, `history`, `recent_observations`, `observation_detail`, `object_count`, `help`, and `unknown`. Category retrieval cannot prove cross-image identity. Returned 2D relations cannot prove real depth or distance; relevant responses carry these limitations explicitly.
+Supported intents cover last seen, history, recent observations, observation detail, object count, help and unknown. The Agent is not open-domain chat. Category retrieval cannot prove cross-image identity.
 
-## Reliability properties
+## Reliability boundaries
 
-- Invalid size, MIME or undecodable images fail before inference.
-- Real analyzer failures return `503`; Mock output is never a silent fallback.
-- DB sessions are context-managed and closed after requests.
-- Failed observation writes remove newly saved images.
-- Delete stages the image, commits the DB delete, then finalizes file cleanup.
-- Storage path resolution rejects traversal and API schemas omit absolute paths.
-- Tests use fake inference and temporary databases/storage; real YOLO has a separate manual smoke procedure.
-- Existing SQLite databases receive only additive nullable Observation columns during startup; new session tables are created normally.
+- Liveness does not initialize YOLO; readiness checks database and writable image storage without inference.
+- Failed observation writes remove the newly saved image.
+- Delete stages the image, commits database deletion, then completes filesystem cleanup.
+- Path traversal is rejected and response schemas omit absolute paths.
+- Tests bind run-local databases and storage through FastAPI app state.
+- SQLite and local images target a single-machine MVP, not distributed production deployment.
+
+See [API](API.md), [device adapters](DEVICE_ADAPTERS.md), [privacy](PRIVACY.md), [deployment](DEPLOYMENT.md), and [architecture decisions](DECISIONS.md).

@@ -29,7 +29,11 @@ $backendRoot = Join-Path $projectRoot "backend"
 $savedAnalyzer = $env:ANALYZER_MODE
 $savedDemo = $env:DEMO_MODE
 $savedProfile = $env:DEMO_PROFILE
+$savedBuild = $env:APP_BUILD
 try {
+    # Managed competition startup must report the build shipped by this
+    # repository even when an older local .env survives an upgrade.
+    $env:APP_BUILD = "day16-18-product-release"
     $env:ANALYZER_MODE = $AnalyzerMode
     $env:DEMO_MODE = $DemoMode.ToString().ToLowerInvariant()
     $env:DEMO_PROFILE = $DemoProfile
@@ -39,6 +43,7 @@ try {
     if ($null -eq $savedAnalyzer) { Remove-Item Env:ANALYZER_MODE -ErrorAction SilentlyContinue } else { $env:ANALYZER_MODE = $savedAnalyzer }
     if ($null -eq $savedDemo) { Remove-Item Env:DEMO_MODE -ErrorAction SilentlyContinue } else { $env:DEMO_MODE = $savedDemo }
     if ($null -eq $savedProfile) { Remove-Item Env:DEMO_PROFILE -ErrorAction SilentlyContinue } else { $env:DEMO_PROFILE = $savedProfile }
+    if ($null -eq $savedBuild) { Remove-Item Env:APP_BUILD -ErrorAction SilentlyContinue } else { $env:APP_BUILD = $savedBuild }
 }
 Save-SceneMindProcessMetadata -Process $process -Role "backend" -Command "uvicorn app.main:app" -Extra @{ port = $Port; analyzer_mode = $AnalyzerMode; demo_mode = $DemoMode; profile = $DemoProfile; stdout_log = $stdoutLog; stderr_log = $stderrLog } | Out-Null
 

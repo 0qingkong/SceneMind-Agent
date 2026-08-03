@@ -13,6 +13,22 @@ const loading = ref(true)
 const backendUnavailable = ref(false)
 const cameraSupported = computed(() => Boolean(navigator.mediaDevices?.getUserMedia))
 const secureContext = computed(() => globalThis.isSecureContext || globalThis.location.hostname === 'localhost')
+const copiedCommand = ref('')
+const recoveryCommands = [
+  ['重新检查', '.\\scripts\\check-system.ps1'],
+  ['应急演示', '.\\scripts\\start-demo.ps1 -Profile C'],
+  ['安全停止', '.\\scripts\\stop-demo.ps1'],
+]
+
+async function copyCommand(command: string) {
+  try {
+    await navigator.clipboard.writeText(command)
+    copiedCommand.value = command
+    setTimeout(() => { if (copiedCommand.value === command) copiedCommand.value = '' }, 1800)
+  } catch {
+    copiedCommand.value = ''
+  }
+}
 
 function level(value: boolean, warning = false): StatusLevel {
   if (value) return warning ? '注意' : '正常'
@@ -43,7 +59,7 @@ onMounted(async () => {
 
 <template>
   <section>
-    <div class="page-heading"><div><p class="eyebrow">COMPETITION READINESS</p><h1>系统状态</h1></div><span>{{ readiness?.status || (loading ? 'checking' : 'offline') }}</span></div>
+    <div class="page-heading"><div><p class="eyebrow">COMPETITION READINESS</p><h1>系统状态</h1></div><span>{{ readiness ? (readiness.status === 'ready' ? '就绪' : '需要注意') : (loading ? '检查中' : '离线') }}</span></div>
     <p v-if="backendUnavailable" class="error-message">后端不可用。请运行 <code>.\scripts\start-demo.ps1</code>，并查看 <code>.runtime\logs</code>。</p>
     <div class="system-status-grid">
       <article><span :class="statusClass(level(Boolean(health)))">{{ level(Boolean(health)) }}</span><strong>后端</strong><small>{{ health ? `API v${health.version} · ${health.build}` : '无法连接健康检查' }}</small></article>
@@ -61,9 +77,7 @@ onMounted(async () => {
     </section>
     <section class="system-card recovery-card">
       <h2>恢复入口</h2>
-      <p><span>重新检查</span><code>.\scripts\check-system.ps1</code></p>
-      <p><span>应急演示</span><code>.\scripts\start-demo.ps1 -Profile C</code></p>
-      <p><span>安全停止</span><code>.\scripts\stop-demo.ps1</code></p>
+      <p v-for="item in recoveryCommands" :key="item[0]"><span>{{ item[0] }}</span><code>{{ item[1] }}</code><button class="copy-button" :aria-label="`复制${item[0]}命令`" @click="copyCommand(item[1])">{{ copiedCommand === item[1] ? '已复制' : '复制' }}</button></p>
       <p><span>详细手册</span><code>docs\RECOVERY.md</code></p>
     </section>
   </section>

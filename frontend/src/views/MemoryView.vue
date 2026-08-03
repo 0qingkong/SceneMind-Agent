@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import axios from 'axios'
 
 import { getHistory, getLastSeen, listObservations } from '../api/client'
@@ -16,15 +16,42 @@ const history = ref<MemoryMatch[]>([])
 const historyTotal = ref(0)
 const loading = ref(false)
 const errorMessage = ref('')
-const pageSize = 20
+const locationFilter = ref('')
+const sourceFilter = ref('')
+const sessionFilter = ref('')
+const timeFilter = ref<'all' | '7' | '30'>('all')
+const pageSize = 100
 
-async function loadObservations(reset = false) {
+const locations = computed(() => [...new Set(observations.value.map((item) => item.location).filter(Boolean) as string[])].sort())
+const sources = computed(() => [...new Set(observations.value.map((item) => item.source_type).filter(Boolean) as string[])].sort())
+const sessions = computed(() => [...new Set(observations.value.map((item) => item.session_id).filter(Boolean) as string[])])
+const filtersActive = computed(() => Boolean(locationFilter.value || sourceFilter.value || sessionFilter.value || timeFilter.value !== 'all'))
+const visibleObservations = computed(() => observations.value.filter((item) => {
+  const days = timeFilter.value === 'all' ? null : Number(timeFilter.value)
+  const after = days ? Date.now() - days * 86400000 : null
+  return (!locationFilter.value || item.location === locationFilter.value)
+    && (!sourceFilter.value || item.source_type === sourceFilter.value)
+    && (!sessionFilter.value || item.session_id === sessionFilter.value)
+    && (!after || new Date(item.created_at).getTime() >= after)
+}))
+
+function sourceName(value: string) {
+  return ({ upload: '图片上传', browser_camera: '浏览器摄像头', demo_seed: '演示数据', glasses_simulator: '眼镜模拟器' } as Record<string, string>)[value] ?? value
+}
+
+function clearFilters() {
+  locationFilter.value = ''
+  sourceFilter.value = ''
+  sessionFilter.value = ''
+  timeFilter.value = 'all'
+}
+
+async function loadObservations() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const offset = reset ? 0 : observations.value.length
-    const response = await listObservations({ limit: pageSize, offset })
-    observations.value = reset ? response.items : [...observations.value, ...response.items]
+    const response = await listObservations({ limit: pageSize, offset: 0 })
+    observations.value = response.items
     observationTotal.value = response.total
   } catch {
     errorMessage.value = '无法读取场景记忆，请检查后端。'
@@ -39,7 +66,7 @@ async function searchMemory(reset = true) {
     activeQuery.value = ''
     lastSeen.value = null
     history.value = []
-    await loadObservations(true)
+    await loadObservations()
     return
   }
   activeQuery.value = query
@@ -48,13 +75,11 @@ async function searchMemory(reset = true) {
   try {
     const offset = reset ? 0 : history.value.length
     const [latest, timeline] = await Promise.all([
-      reset
-        ? getLastSeen(query).then((response) => response.result).catch((error) => {
-            if (axios.isAxiosError(error) && error.response?.status === 404) return null
-            throw error
-          })
-        : Promise.resolve(lastSeen.value),
-      getHistory(query, { limit: pageSize, offset }),
+      reset ? getLastSeen(query).then((response) => response.result).catch((error) => {
+        if (axios.isAxiosError(error) && error.response?.status === 404) return null
+        throw error
+      }) : Promise.resolve(lastSeen.value),
+      getHistory(query, { limit: 20, offset }),
     ])
     lastSeen.value = latest
     history.value = reset ? timeline.items : [...history.value, ...timeline.items]
@@ -66,67 +91,52 @@ async function searchMemory(reset = true) {
   }
 }
 
-onMounted(() => loadObservations(true))
+async function clearSearch() {
+  searchInput.value = ''
+  activeQuery.value = ''
+  lastSeen.value = null
+  history.value = []
+  await loadObservations()
+}
+
+onMounted(loadObservations)
 </script>
 
 <template>
   <section>
-    <div class="page-heading">
-      <div><p class="eyebrow">SPATIAL MEMORY</p><h1>空间记忆</h1></div>
-      <span>{{ activeQuery ? historyTotal : observationTotal }} 条记忆</span>
-    </div>
-
-    <form class="memory-search" @submit.prevent="searchMemory(true)">
-      <input v-model="searchInput" placeholder="搜索杯子、电脑、背包……" />
+    <div class="page-heading"><div><p class="eyebrow">SPATIAL MEMORY</p><h1>空间记忆</h1></div><span>{{ activeQuery ? historyTotal : observationTotal }} 条记忆</span></div>
+    <form class="memory-search" role="search" @submit.prevent="searchMemory(true)">
+      <label class="sr-only" for="memory-query">按物体类别搜索记忆</label>
+      <input id="memory-query" v-model="searchInput" placeholder="搜索杯子、电脑、背包……" />
       <button class="primary-button" :disabled="loading">搜索记忆</button>
+      <button v-if="activeQuery || searchInput" class="secondary-button" type="button" :disabled="loading" @click="clearSearch">清空搜索</button>
     </form>
-    <p class="search-guidance">按检测类别搜索，例如：杯子、人物、电脑、椅子；这不是跨图片身份识别。</p>
+    <p class="search-guidance">按检测类别搜索；类别匹配不代表跨图片确认是同一个现实物体。</p>
 
-    <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+    <section v-if="!activeQuery && observations.length" class="memory-filter-panel surface-card" aria-label="记忆筛选">
+      <label>地点<select v-model="locationFilter"><option value="">全部地点</option><option v-for="item in locations" :key="item" :value="item">{{ item }}</option></select></label>
+      <label>来源<select v-model="sourceFilter"><option value="">全部来源</option><option v-for="item in sources" :key="item" :value="item">{{ sourceName(item) }}</option></select></label>
+      <label>会话<select v-model="sessionFilter"><option value="">全部会话</option><option v-for="item in sessions" :key="item" :value="item">{{ item.slice(0, 8) }}…</option></select></label>
+      <label>时间<select v-model="timeFilter"><option value="all">全部时间</option><option value="7">最近 7 天</option><option value="30">最近 30 天</option></select></label>
+      <button class="text-button" :disabled="!filtersActive" @click="clearFilters">清空筛选</button>
+    </section>
+
+    <div v-if="errorMessage" class="state-message state-error" role="alert"><p>{{ errorMessage }}</p><button class="secondary-button" @click="activeQuery ? searchMemory(true) : loadObservations()">重试</button></div>
     <template v-if="activeQuery">
       <p class="retrieval-disclaimer">按检测标签检索历史观测，不代表跨图片确认是同一个物体。</p>
       <p v-if="loading && !history.length" class="memory-status">正在检索“{{ activeQuery }}”…</p>
-      <div v-else-if="!lastSeen" class="memory-empty compact-empty">
-        <h2>没有找到“{{ activeQuery }}”</h2>
-        <p>可以尝试英文标签、中文名称或更短的关键词。</p>
-      </div>
+      <div v-else-if="!lastSeen" class="memory-empty compact-empty"><h2>没有找到“{{ activeQuery }}”</h2><p>可以尝试英文标签、中文名称或更短的关键词。</p></div>
       <template v-else>
-        <section class="last-seen-section">
-          <h2>最近一次检测到：{{ activeQuery }}</h2>
-          <MemoryMatchCard :match="lastSeen" prominent />
-        </section>
-        <section class="history-section">
-          <h2>历史观测</h2>
-          <div class="history-timeline">
-            <MemoryMatchCard v-for="item in history" :key="item.observation.id" :match="item" />
-          </div>
-          <button
-            v-if="history.length < historyTotal"
-            class="secondary-button load-more-button"
-            :disabled="loading"
-            @click="searchMemory(false)"
-          >{{ loading ? '加载中…' : '加载更多历史' }}</button>
-        </section>
+        <section class="last-seen-section"><h2>最近一次检测到：{{ activeQuery }}</h2><MemoryMatchCard :match="lastSeen" prominent /></section>
+        <section class="history-section"><h2>历史观测</h2><div class="history-timeline"><MemoryMatchCard v-for="item in history" :key="item.observation.id" :match="item" /></div><button v-if="history.length < historyTotal" class="secondary-button load-more-button" :disabled="loading" @click="searchMemory(false)">{{ loading ? '加载中…' : '加载更多历史' }}</button></section>
       </template>
     </template>
 
     <template v-else>
       <p v-if="loading && !observations.length" class="memory-status">正在读取场景记忆…</p>
-      <div v-else-if="!observations.length" class="memory-empty">
-        <strong class="memory-logo">S</strong>
-        <h2>让每一次观测成为可检索的记忆</h2>
-        <p>还没有保存的场景。完成一次“分析并记忆”后，物体、关系、时间和图片会出现在这里。</p>
-        <RouterLink class="primary-link" to="/analyze">返回场景分析</RouterLink>
-      </div>
-      <div v-else class="observation-timeline">
-        <ObservationCard v-for="item in observations" :key="item.id" :observation="item" />
-        <button
-          v-if="observations.length < observationTotal"
-          class="secondary-button load-more-button"
-          :disabled="loading"
-          @click="loadObservations(false)"
-        >{{ loading ? '加载中…' : '加载更多' }}</button>
-      </div>
+      <div v-else-if="!observations.length && !errorMessage" class="memory-empty"><strong class="memory-logo">S</strong><h2>让每一次观测成为可检索的记忆</h2><p>还没有保存的场景。完成一次“分析并记忆”后，物体、关系、时间和图片会出现在这里。</p><RouterLink class="primary-link" to="/analyze">开始场景分析</RouterLink></div>
+      <div v-else-if="!visibleObservations.length" class="memory-empty compact-empty"><h2>没有符合筛选条件的记忆</h2><p>清空筛选后可以查看已加载的最近 {{ observations.length }} 条记录。</p><button class="secondary-button" @click="clearFilters">清空筛选</button></div>
+      <div v-else class="observation-timeline"><ObservationCard v-for="item in visibleObservations" :key="item.id" :observation="item" /><p v-if="observationTotal > observations.length" class="search-guidance">当前筛选覆盖最近 {{ observations.length }} 条记录，共 {{ observationTotal }} 条。</p></div>
     </template>
   </section>
 </template>

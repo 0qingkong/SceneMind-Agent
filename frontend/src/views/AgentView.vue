@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import axios from 'axios'
 
 import { queryAgent } from '../api/client'
@@ -18,6 +18,15 @@ const query = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 const result = ref<AgentQueryResponse | null>(null)
+const intentLabels: Record<string, string> = {
+  last_seen: '最近出现', history: '历史记录', recent_observations: '最近观察',
+  observation_detail: '观察详情', object_count: '物体计数', help: '使用帮助', unknown: '超出支持范围',
+}
+const toolLabels: Record<string, string> = {
+  memory_last_seen: '查询最近出现', memory_history: '查询历史记录', list_recent_observations: '读取最近观察',
+  get_observation_detail: '读取观察详情', count_objects: '统计物体', none: '未调用工具',
+}
+const unsupported = computed(() => result.value?.intent === 'unknown')
 
 async function ask(value?: string) {
   if (value) query.value = value
@@ -55,6 +64,11 @@ async function ask(value?: string) {
       </div>
     </form>
 
+    <aside class="agent-scope-note surface-card">
+      <strong>Agent 只查询已保存证据</strong>
+      <span>支持最近出现、历史、观察详情、最近记忆和物体计数；不回答天气、身份识别、真实深度或厘米距离。</span>
+    </aside>
+
     <div class="example-chips" aria-label="示例问题">
       <button v-for="example in examples" :key="example" :disabled="loading" @click="ask(example)">{{ example }}</button>
     </div>
@@ -63,12 +77,9 @@ async function ask(value?: string) {
     <div v-if="loading" class="agent-loading"><span></span><p>正在规划检索并核对观察证据…</p></div>
 
     <template v-else-if="result">
-      <section class="agent-answer-card">
-        <div><span>{{ result.intent }}</span><strong>基于 {{ result.evidence.length }} 条观察证据</strong></div>
+      <section class="agent-answer-card" :class="{ 'unsupported-answer': unsupported }">
+        <div><span>{{ intentLabels[result.intent] }}</span><strong>{{ unsupported ? '未调用记忆工具' : `基于 ${result.evidence.length} 条观察证据` }}</strong></div>
         <p>{{ result.answer }}</p>
-        <ul v-if="result.limitations.length">
-          <li v-for="item in result.limitations" :key="item">{{ item }}</li>
-        </ul>
       </section>
 
       <section v-if="result.evidence.length" class="agent-evidence-section">
@@ -77,15 +88,17 @@ async function ask(value?: string) {
           <AgentEvidenceCard v-for="item in result.evidence" :key="item.observation_id" :evidence="item" />
         </div>
       </section>
-      <div v-else class="memory-empty compact-empty agent-empty">
-        <h2>没有可展示的场景证据</h2>
-        <p>Agent 不会在记忆为空或问题超出范围时猜测答案。请先保存场景，或尝试上方示例。</p>
+      <div v-else class="memory-empty compact-empty agent-empty" :class="{ 'unsupported-empty': unsupported }">
+        <h2>{{ unsupported ? '这个问题超出当前支持范围' : '没有找到匹配的场景证据' }}</h2>
+        <p>{{ unsupported ? 'SceneMind 不会把开放领域知识或物理距离伪装成空间记忆答案。' : 'Agent 不会在记忆为空时猜测答案。请先保存场景，或换一个检测类别。' }}</p>
       </div>
+
+      <section v-if="result.limitations.length" class="boundary-card surface-card"><h2>能力边界</h2><ul><li v-for="item in result.limitations" :key="item">{{ item }}</li></ul><p>类别匹配不等于确认是同一个现实物体。</p></section>
 
       <details class="tool-trace">
         <summary>查看工具执行轨迹</summary>
         <article v-for="(step, index) in result.tool_steps" :key="`${step.tool}-${index}`">
-          <strong>{{ step.tool }}</strong><span>{{ step.status }} · {{ step.result_count }}</span>
+          <strong>{{ toolLabels[step.tool] || step.tool }}</strong><span>{{ step.status === 'success' ? '成功' : step.status === 'no_match' ? '无匹配' : '已跳过' }} · {{ step.result_count }} 条</span>
           <code>{{ JSON.stringify(step.arguments) }}</code>
         </article>
       </details>

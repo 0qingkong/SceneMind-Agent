@@ -42,7 +42,7 @@ export function loadPreferences(storage: Storage = localStorage): PrivacyPrefere
       defaultCaptureInterval: boundedInteger(parsed.defaultCaptureInterval, 5, 3, 60),
       autoSaveMode: mode,
       retentionDays: boundedInteger(parsed.retentionDays, 30, 1, 3650),
-      alwaysShowCameraIndicator: booleanPreference(parsed.alwaysShowCameraIndicator, true),
+      alwaysShowCameraIndicator: true,
       pauseAllContinuousCapture: booleanPreference(parsed.pauseAllContinuousCapture, false),
       confirmBeforeDelete: booleanPreference(parsed.confirmBeforeDelete, true),
       showSimulatorLabels: booleanPreference(parsed.showSimulatorLabels, true),
@@ -59,6 +59,7 @@ export function savePreferences(
   const normalized = loadPreferences({
     getItem: () => JSON.stringify(preferences),
   } as unknown as Storage)
+  normalized.alwaysShowCameraIndicator = true
   storage.setItem(SETTINGS_KEY, JSON.stringify(normalized))
   globalThis.dispatchEvent?.(new CustomEvent(SETTINGS_EVENT, { detail: normalized }))
   return normalized
