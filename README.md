@@ -190,7 +190,7 @@ cd backend
 - [部署](docs/DEPLOYMENT.md)
 - [竞赛摘要](docs/COMPETITION_SUMMARY.md)
 
-评估模板中的人工指标默认为 `not_run`，不会被误报为通过。填写 `backend/evaluation/cases.json` 的实测字段后，在 `backend` 运行 `..\.venv\Scripts\python.exe scripts\run_evaluation.py` 生成 JSON 和 Markdown 报告。
+Day 15 的正式评测不会把未测数据误报为通过，也不会混合 Mock 与 YOLO 指标。运行 `.\scripts\run-evaluation.ps1 -Module all -AnalyzerMode mock` 会验证清单并在忽略的 `.runtime\evaluation` 下生成环境、五个模块结果、失败案例、摘要和 Markdown 报告。详见 [正式评测](docs/EVALUATION.md) 与 [已知限制](docs/LIMITATIONS.md)。
 
 ## 前端安装与启动
 
@@ -256,6 +256,16 @@ The resilience suite uses isolated databases, image storage, ports, and Mock inf
 ```
 
 Use `-SkipBrowser` when Edge/Playwright is unavailable, `-KeepRuntime` to retain fixtures, and `-Json` for machine-readable output. Artifacts stay under ignored `.runtime\test-results`. See [TEST_PLAN](docs/TEST_PLAN.md) and [TEST_REPORT](docs/TEST_REPORT.md).
+
+## Day 15 formal evaluation
+
+```powershell
+.\scripts\run-evaluation.ps1 -Module all -AnalyzerMode mock
+.\scripts\run-evaluation.ps1 -Module memory -Json
+.\scripts\run-evaluation.ps1 -Module agent -Json
+```
+
+The committed data is small and synthetic: six scenes, twelve manually reviewed predicted relations, ten memory queries, eighteen Agent questions, and six session frames. The real YOLO and hardware evaluations remain `not_run` until permitted assets/devices are supplied. No detection mAP, recall, or F1 is claimed without bounding-box ground truth.
 
 ## 当前范围
 
