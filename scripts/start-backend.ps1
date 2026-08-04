@@ -33,7 +33,7 @@ $savedBuild = $env:APP_BUILD
 try {
     # Managed competition startup must report the build shipped by this
     # repository even when an older local .env survives an upgrade.
-    $env:APP_BUILD = "day16-18-product-release"
+    $env:APP_BUILD = "day19-20-release-candidate"
     $env:ANALYZER_MODE = $AnalyzerMode
     $env:DEMO_MODE = $DemoMode.ToString().ToLowerInvariant()
     $env:DEMO_PROFILE = $DemoProfile

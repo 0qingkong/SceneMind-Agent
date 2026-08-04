@@ -6,9 +6,9 @@ Release target: `0.9.0-rc1`. Canonical story: **problem → multi-device visual 
 
 | Profile | Input and analyzer | Recording role | Required disclosure |
 | --- | --- | --- | --- |
-| A | Browser camera + real YOLO | Live hardware path after target-device rehearsal | Camera/HTTPS/hardware result must be stated |
-| B | Approved local image + real YOLO | Deterministic real-analyzer recording path | Image ownership and model identity must be recorded |
-| C | Generated Demo evidence + explicit Mock | Complete emergency path and automated screenshot baseline | Mock proves orchestration, not YOLO accuracy |
+| Profile A | Browser camera + real YOLO | Live hardware path after target-device rehearsal | Camera/HTTPS/hardware result must be stated |
+| Profile B | Approved local image + real YOLO | Deterministic real-analyzer recording path | Image ownership and model identity must be recorded |
+| Profile C | Generated Demo evidence + explicit Mock | Complete emergency path and automated screenshot baseline | Mock proves orchestration, not YOLO accuracy |
 
 Never change from YOLO to Mock silently. Profile B currently requires human-supplied, approved images listed in [DEMO_ASSET_MANIFEST](DEMO_ASSET_MANIFEST.md).
 
@@ -25,7 +25,7 @@ Never change from YOLO to Mock silently. Profile B currently requires human-supp
 | 7 | `/agent` | Cup evidence exists | Ask `我的杯子最后出现在哪里？` | Supported intent, answer, evidence card, limitations | “The Agent selects a bounded read-only tool and answers only from stored records.” | 30s | Use prepared question/screenshot |
 | 8 | `/memory/{id}` | Agent evidence link is valid | Open cited observation | Original image, metadata, objects and relations | “Every answer can trace back to the original visual evidence.” | 20s | Open seeded Observation ID `...0101` |
 | 9 | `/sessions/{id}` | Seeded or rehearsed session exists | Open timeline | Status, sample/analyze/save counts and reasons | “Foreground low-frequency observation saves meaningful changes instead of streaming video.” | 25s | Use Demo session ID `...0201` |
-| 10 | `/glasses` | Browser frontend available | Show disclosure; do not request camera during automated capture | `AI Glasses Simulator` and hardware disclaimer | “This is a browser interaction preview, not connected eyewear.” | 15s | Use approved simulator screenshot |
+| 10 | `/devices`, `/glasses` | Browser frontend available | Show device center, then simulator disclosure; do not request camera during automated capture | Capture-source status, `AI Glasses Simulator` and hardware disclaimer | “The source abstraction is implemented; this glasses view is a browser preview, not connected eyewear.” | 20s | Use approved device/simulator screenshots |
 | 11 | `/insights`, `/privacy`, `/system` | Persisted data and ready backend | Show aggregates, camera indicator rule and readiness | SQL-derived counts, planned controls, version/profile | “Statistics come from stored data; the camera indicator cannot be disabled; unimplemented protections stay labeled.” | 25s | Use approved status screenshots |
 | 12 | `/` evaluation section | Day 15 source report available | End on scorecard | Memory 10/10; Agent 17/18; relations 11/12; sessions 6/6; real YOLO `not_run` | “The measured set is small and deterministic; it is evidence, not a universal accuracy claim.” | 25s | Use pitch slide 10 |
 

@@ -17,7 +17,7 @@ Base URL: `http://127.0.0.1:8000/api/v1`. Interactive OpenAPI documentation is a
 Returns process liveness and lightweight analyzer configuration without loading YOLO.
 
 ```json
-{"status":"ok","service":"scenemind-agent-api","version":"0.18.0","analyzer_mode":"mock","model_loaded":false,"demo_mode":true,"demo_profile":"C"}
+{"status":"ok","service":"scenemind-agent-api","version":"0.9.0-rc1","analyzer_mode":"mock","model_loaded":false,"demo_mode":true,"demo_profile":"C"}
 ```
 
 ### `GET /ready`

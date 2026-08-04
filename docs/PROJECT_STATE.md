@@ -8,6 +8,15 @@ Competition submission deadline: 2026-08-08.
 
 ## Completed
 
+### Day 19-20 - Final demo and release candidate
+
+- Canonical live/video narrative, 3-minute and 5-minute speaker notes, subtitles, asset policy, judge Q&A and final public-claims ledger
+- Deterministic Profile C recording preflight and staged desktop/mobile screenshot automation
+- Optional non-overwriting FFmpeg render, compression and thumbnail workflow with explicit human media gates
+- Release-candidate Bug Bash orchestration, version/claim consistency and redacted sensitive-data/artifact scan
+- Offline delivery tree, external-asset manifest, SHA-256 generation, clean-temp verification and no-network-change Profile C smoke
+- Release notes, actual known issues, freeze policy and human hardware/media/publication checklist for `0.9.0-rc1`
+
 ### Day 16-18 - Product and competition release package
 
 - Unified tokens, app shell, responsive navigation, safe areas and accessibility states
@@ -94,16 +103,18 @@ Competition submission deadline: 2026-08-08.
 
 ## Current milestone
 
-### Day 15 — Formal quantitative evaluation
+### Day 19-20 — Competition release candidate
 
-- Reproducible runtime reports and manual annotations are complete for the permitted synthetic set.
-- Real YOLO evaluation is explicitly `not_run` because no licensed local real-image set was available in this environment.
+- Automated preparation targets `0.9.0-rc1` and Profile C as the deterministic offline/emergency flow.
+- Real screen recording, Profile A camera, Profile B approved real images/YOLO, physical phone, final package inspection and publication remain human gates until evidence is supplied.
+- Real YOLO formal evaluation remains `not_run`; existing Day 15 results remain the public metric source.
 
 ## Next milestones
 
-- Collect and annotate a lawful 40–60 image real-scene set.
-- Rehearse Profile A/B and phone camera with target hardware and trusted HTTPS.
-- Fix the documented physical-distance Agent misroute with a focused regression before changing the reported baseline.
+- Complete the human Day 19 recording, subtitle, privacy, screenshot, playback and timed-rehearsal gates.
+- Rehearse Profile A/B and one physical phone on target hardware with trusted HTTPS and approved assets.
+- Inspect the offline package, approve licensing and unresolved P2/P3 items, then explicitly authorize tag/publication if acceptable.
+- After the competition freeze, fix the documented physical-distance Agent misroute with a focused regression before changing the reported baseline.
 
 ## Product constraints
 

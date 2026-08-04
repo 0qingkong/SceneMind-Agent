@@ -27,7 +27,7 @@ onMounted(async () => {
         <RouterLink to="/agent">Agent</RouterLink><RouterLink to="/sessions">观察会话</RouterLink>
         <RouterLink to="/devices">设备</RouterLink><RouterLink to="/insights">洞察</RouterLink>
       </nav>
-      <RouterLink class="version-chip" to="/system" aria-label="查看系统状态">v0.18.0</RouterLink>
+      <RouterLink class="version-chip" to="/system" aria-label="查看系统状态">v0.9.0-rc1</RouterLink>
     </header>
 
     <main id="main-content" class="page-container" tabindex="-1">
