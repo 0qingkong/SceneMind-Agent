@@ -35,6 +35,11 @@ if (-not (Wait-SceneMindHttp -Uri $url -TimeoutSeconds 45)) {
     $tail = Get-SceneMindLogTail $stderrLog
     throw "Frontend did not respond at $url.`n$tail"
 }
+$listenerProcess = Get-SceneMindTcpListenerProcess -Port $Port
+if ($listenerProcess -and $listenerProcess.Id -ne $process.Id) {
+    Save-SceneMindProcessMetadata -Process $listenerProcess -Role "frontend" -Command "vite dev server" -Extra @{ port = $Port; host_address = $BindHost; launcher_pid = $process.Id; stdout_log = $stdoutLog; stderr_log = $stderrLog } | Out-Null
+    $process = $listenerProcess
+}
 Write-Host "Frontend ready: $url" -ForegroundColor Green
 Write-Host "PID $($process.Id) | logs: $stdoutLog / $stderrLog"
 if (-not $NoOpen) { Start-Process $url }

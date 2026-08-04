@@ -12,13 +12,30 @@ $runRoot = Join-Path $projectRoot (Join-Path ".runtime\release" $runId)
 New-Item -ItemType Directory -Path $runRoot -Force | Out-Null
 $results = New-Object System.Collections.Generic.List[object]
 
-function Invoke-GateProcess([string]$Name, [string]$FilePath, [string[]]$Arguments, [string]$WorkingDirectory = $projectRoot) {
+function Invoke-GateProcess([string]$Name, [string]$FilePath, [string[]]$Arguments, [string]$WorkingDirectory = $projectRoot, [bool]$CaptureOutput = $true) {
     $stdout = Join-Path $runRoot "$Name.stdout.log"
     $stderr = Join-Path $runRoot "$Name.stderr.log"
     $started = [DateTime]::UtcNow
     try {
-        $process = Start-Process -FilePath $FilePath -ArgumentList $Arguments -WorkingDirectory $WorkingDirectory -RedirectStandardOutput $stdout -RedirectStandardError $stderr -Wait -PassThru -WindowStyle Hidden
-        $code = $process.ExitCode
+        Push-Location $WorkingDirectory
+        try {
+            $savedPreference = $ErrorActionPreference
+            $ErrorActionPreference = "Continue"
+            if ($CaptureOutput) {
+                & $FilePath @Arguments 1> $stdout 2> $stderr
+            } else {
+                # A startup command intentionally leaves managed services alive
+                # for the following smoke gate. Redirecting its console handles
+                # can keep the parent waiting on those descendants on Windows.
+                & $FilePath @Arguments
+                [IO.File]::WriteAllText($stdout, "Console streamed to the bug-bash runner; see .runtime/logs and recording status JSON.")
+                [IO.File]::WriteAllText($stderr, "")
+            }
+            $code = $LASTEXITCODE
+        } finally {
+            $ErrorActionPreference = $savedPreference
+            Pop-Location
+        }
         $detail = if ($code -eq 0) { "Command passed." } else { "Exit code $code; inspect $stderr and $stdout." }
     } catch {
         $code = 999
@@ -45,7 +62,7 @@ Invoke-GateProcess "day14_e2e" $powershell $e2eArguments
 Invoke-GateProcess "failure_injection" $powershell @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $projectRoot "scripts\failure-test.ps1"))
 Invoke-GateProcess "data_integrity" $powershell @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $projectRoot "scripts\data-integrity-test.ps1"))
 
-Invoke-GateProcess "profile_c_prepare" $powershell @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $projectRoot "scripts\media\prepare-recording.ps1"), "-Profile", $Profile, "-NoBrowser")
+Invoke-GateProcess "profile_c_prepare" $powershell @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $projectRoot "scripts\media\prepare-recording.ps1"), "-Profile", $Profile, "-NoBrowser") $projectRoot $false
 Invoke-GateProcess "profile_c_extended_smoke" $powershell @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $projectRoot "scripts\smoke-demo.ps1"), "-Extended")
 Invoke-GateProcess "profile_c_stop" $powershell @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $projectRoot "scripts\stop-demo.ps1"), "-Force")
 

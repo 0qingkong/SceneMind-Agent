@@ -20,7 +20,7 @@ $statusPath = Join-Path $stageRoot "capture-status.json"
 $previous = @{}
 
 try {
-    & (Join-Path $PSScriptRoot "prepare-recording.ps1") -Profile $Profile -NoBrowser
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "prepare-recording.ps1") -Profile $Profile -NoBrowser
     if ($LASTEXITCODE -ne 0) { throw "Recording preflight failed." }
 
     $observationResponse = Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/v1/observations?limit=1" -TimeoutSec 10
