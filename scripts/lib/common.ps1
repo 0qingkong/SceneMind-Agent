@@ -60,6 +60,22 @@ function Test-SceneMindPortAvailable {
     }
 }
 
+function Get-SceneMindTcpListenerProcess {
+    param([Parameter(Mandatory = $true)][int]$Port)
+
+    try {
+        $lines = @(& netstat.exe -ano -p TCP 2>$null)
+        foreach ($line in $lines) {
+            if ($line -match ("^\s*TCP\s+(?:127\.0\.0\.1|0\.0\.0\.0|\[::\]):" + $Port + "\s+\S+\s+LISTENING\s+(\d+)\s*$")) {
+                return Get-Process -Id ([int]$Matches[1]) -ErrorAction SilentlyContinue
+            }
+        }
+    } catch {
+        return $null
+    }
+    return $null
+}
+
 function Wait-SceneMindHttp {
     param(
         [Parameter(Mandatory = $true)][string]$Uri,

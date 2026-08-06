@@ -43,7 +43,7 @@ def _read_bool(source: Mapping[str, str], name: str, default: bool) -> bool:
 @dataclass(frozen=True, slots=True)
 class Settings:
     allowed_origins: tuple[str, ...] = ("http://localhost:5173", "http://127.0.0.1:5173")
-    app_build: str = "day16-18-product-release"
+    app_build: str = "day19-20-release-candidate"
     analyzer_mode: str = "yolo"
     yolo_model: str = "yolo26n.pt"
     yolo_conf: float = 0.30
@@ -156,8 +156,8 @@ class Settings:
                 ).split(",")
                 if item.strip()
             ),
-            app_build=source.get("APP_BUILD", "day16-18-product-release").strip()
-            or "day16-18-product-release",
+            app_build=source.get("APP_BUILD", "day19-20-release-candidate").strip()
+            or "day19-20-release-candidate",
             analyzer_mode=source.get("ANALYZER_MODE", "yolo").strip().lower() or "yolo",
             yolo_model=source.get("YOLO_MODEL", "yolo26n.pt").strip()
             or "yolo26n.pt",

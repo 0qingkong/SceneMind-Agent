@@ -14,6 +14,7 @@ $isolatedRoot = Join-Path $resultRoot "isolated"
 New-Item -ItemType Directory -Path $isolatedRoot -Force | Out-Null
 $backendProcess = $null
 $frontendProcess = $null
+$frontendListenerProcess = $null
 $checks = New-Object System.Collections.Generic.List[object]
 
 function Add-E2eResult([string]$Name, [bool]$Passed, [string]$Detail) {
@@ -65,6 +66,7 @@ try {
         $npm = (Get-Command npm.cmd -ErrorAction Stop).Source
         $frontendProcess = Start-Process -FilePath $npm -ArgumentList @("run", "dev", "--", "--host", "127.0.0.1", "--port", "$frontendPort", "--strictPort") -WorkingDirectory (Join-Path $projectRoot "frontend") -RedirectStandardOutput (Join-Path $resultRoot "frontend.log") -RedirectStandardError (Join-Path $resultRoot "frontend-error.log") -PassThru -WindowStyle Hidden
         if (-not (Wait-SceneMindHttp -Uri "http://127.0.0.1:$frontendPort" -TimeoutSeconds 45)) { throw "Isolated frontend did not become ready." }
+        $frontendListenerProcess = Get-SceneMindTcpListenerProcess -Port $frontendPort
 
         $imagePath = Join-Path $isolatedRoot "permitted-synthetic.png"
         & $python -c "from PIL import Image; Image.new('RGB', (640, 480), 'white').save(r'''$imagePath''')"
@@ -81,6 +83,7 @@ try {
         } finally { Pop-Location }
     }
 } finally {
+    Stop-OwnedProcess $frontendListenerProcess
     Stop-OwnedProcess $frontendProcess
     Stop-OwnedProcess $backendProcess
     @("DATABASE_URL", "SCENE_STORAGE_DIR", "ANALYZER_MODE", "DEMO_MODE", "DEMO_PROFILE", "ALLOWED_ORIGINS", "VITE_API_BASE_URL", "SCENEMIND_E2E_BASE_URL", "SCENEMIND_E2E_API_URL", "SCENEMIND_E2E_IMAGE", "SCENEMIND_E2E_REPORT", "SCENEMIND_E2E_OUTPUT") | ForEach-Object { Remove-Item "Env:$_" -ErrorAction SilentlyContinue }

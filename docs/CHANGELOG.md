@@ -2,6 +2,14 @@
 
 This file records competition milestones. Dates use Asia/Shanghai project time.
 
+## 0.9.0-rc1 - 2026-08-03
+
+- Added final demo narrative, 3/5-minute talks, timed subtitles, asset policy, judge answers and claims ledger.
+- Added recording preflight, staged desktop/mobile screenshots and optional non-overwriting FFmpeg workflows.
+- Added release-candidate Bug Bash, consistency and sensitive-data gates.
+- Added offline package manifest, SHA-256 generation/verification and local Profile C validation.
+- Recorded actual known issues, freeze policy and unperformed human hardware/media/publication gates.
+
 ## 0.18.0 - 2026-08-03
 
 - Unified the SceneMind design system, responsive app shell, navigation and safe-area handling.

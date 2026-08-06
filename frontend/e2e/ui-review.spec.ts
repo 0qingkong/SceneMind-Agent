@@ -5,11 +5,6 @@ import path from 'node:path'
 const imagePath = process.env.SCENEMIND_E2E_IMAGE
 const apiBase = process.env.SCENEMIND_E2E_API_URL ?? 'http://127.0.0.1:18000/api/v1'
 const reviewRoot = process.env.SCENEMIND_UI_REVIEW_DIR ?? '../artifacts/ui-review'
-const routes = [
-  ['01-home', '/'], ['02-live-lens', '/live'], ['03-analysis', '/analyze'], ['04-memory', '/memory'],
-  ['05-agent', '/agent'], ['06-session', '/sessions'], ['07-devices', '/devices'],
-  ['08-glasses-simulator', '/glasses'], ['09-insights', '/insights'], ['10-privacy', '/privacy'], ['11-system', '/system'],
-] as const
 const viewports = [
   { name: 'desktop', width: 1440, height: 900, screenshots: true },
   { name: 'tablet', width: 1024, height: 768, screenshots: false },
@@ -29,10 +24,23 @@ for (const viewport of viewports) {
     await page.locator('input[type=file]').setInputFiles(imagePath)
     await page.locator('.analysis-actions .primary-button').click()
     await expect(page.locator('.success-message')).toBeVisible()
-    await request.post(`${apiBase}/capture-sessions`, { data: {
+    const observationsResponse = await request.get(`${apiBase}/observations?limit=1`)
+    expect(observationsResponse.ok()).toBeTruthy()
+    const observations = await observationsResponse.json() as { items: Array<{ id: string }> }
+    expect(observations.items.length).toBeGreaterThan(0)
+
+    const sessionResponse = await request.post(`${apiBase}/capture-sessions`, { data: {
       title: `UI review ${viewport.name}`, source_type: 'evaluation', sample_interval_seconds: 5,
       auto_save_mode: 'manual',
     } })
+    expect(sessionResponse.ok()).toBeTruthy()
+    const session = await sessionResponse.json() as { id: string }
+    const routes = [
+      ['01-home', '/'], ['02-live-lens', '/live'], ['03-analysis', '/analyze'], ['04-memory', '/memory'],
+      ['05-observation-evidence', `/memory/${observations.items[0].id}`], ['06-agent-evidence', '/agent'],
+      ['07-session-timeline', `/sessions/${session.id}`], ['08-devices', '/devices'],
+      ['09-glasses-simulator', '/glasses'], ['10-insights', '/insights'], ['11-privacy', '/privacy'], ['12-system', '/system'],
+    ]
 
     for (const [name, route] of routes) {
       await page.goto(route)
