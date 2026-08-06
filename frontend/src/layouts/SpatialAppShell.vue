@@ -1,0 +1,33 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+import MobileDock from '../components/navigation/MobileDock.vue'
+import SpatialRail from '../components/navigation/SpatialRail.vue'
+import GlobalSystemStrip from '../components/system/GlobalSystemStrip.vue'
+import type { ReadinessResponse } from '../types/api'
+
+defineProps<{ readiness: ReadinessResponse | null }>()
+const railExpanded = ref(false)
+</script>
+
+<template>
+  <div class="spatial-shell" :class="{ 'rail-expanded': railExpanded }">
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
+    <SpatialRail :expanded="railExpanded" @toggle="railExpanded = !railExpanded" />
+    <div class="spatial-workspace">
+      <GlobalSystemStrip :readiness="readiness" />
+      <RouterLink
+        v-if="readiness?.demo_mode || readiness?.demo_data_present"
+        class="global-demo-banner"
+        to="/system"
+        role="status"
+      >
+        Profile {{ readiness.demo_profile }} · Mock / 演示数据已明确标记 · 不代表真实 YOLO 检测
+      </RouterLink>
+      <main id="main-content" class="page-container" tabindex="-1">
+        <slot />
+      </main>
+    </div>
+    <MobileDock />
+  </div>
+</template>

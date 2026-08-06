@@ -1,0 +1,29 @@
+@keyframes sm-fade-up {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes sm-pulse-once {
+  0% { transform: scale(0.96); opacity: 0.72; }
+  55% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes sm-status-breathe {
+  0%, 100% { opacity: 0.56; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.route-enter-active,
+.route-leave-active { transition: opacity var(--sm-duration-base) var(--sm-ease-standard), transform var(--sm-duration-base) var(--sm-ease-standard); }
+.route-enter-from { opacity: 0; transform: translate3d(0, 8px, 0); }
+.route-leave-to { opacity: 0; transform: translate3d(0, -4px, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
