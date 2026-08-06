@@ -19,6 +19,20 @@
 .route-enter-from { opacity: 0; transform: translate3d(0, 8px, 0); }
 .route-leave-to { opacity: 0; transform: translate3d(0, -4px, 0); }
 
+.memory-core:not(.quality-reduced) .core-orbits i:first-child { animation: sm-core-orbit 24s linear infinite; }
+.memory-core:not(.quality-reduced) .core-orbits i:nth-child(2) { animation: sm-core-orbit-reverse 32s linear infinite; }
+.memory-core.state-analyzing .core-orbits i:nth-child(3), .memory-core.state-retrieving .core-orbits i:nth-child(3) { animation: sm-core-orbit 8s linear infinite; }
+.memory-core.state-target-found { animation: sm-pulse-once 620ms var(--sm-ease-out) both; }
+
+@keyframes sm-core-orbit {
+  from { transform: rotate(-14deg) scaleY(0.52); }
+  to { transform: rotate(346deg) scaleY(0.52); }
+}
+@keyframes sm-core-orbit-reverse {
+  from { transform: rotate(24deg) scaleY(0.7); }
+  to { transform: rotate(-336deg) scaleY(0.7); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     scroll-behavior: auto !important;
