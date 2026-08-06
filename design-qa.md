@@ -38,3 +38,15 @@ The route set covers Home, Live Lens, Analyze, Memory, Memory Detail, Agent, Ses
 ## Result
 
 Passed. No open P0/P1 visual defects were found in the reviewed Profile C desktop, tablet, mobile, or reduced-motion captures. Physical-device camera behavior and Profile A/B real-model imagery remain manual verification items.
+
+## Motion polish verification — 2026-08-07
+
+- Replaced the flat core with a state-interpolated WebGL memory object: liquid surface deformation, Fresnel light, internal lattice, spatial orbit rings, deterministic particles, and pointer response.
+- Added a restrained global aurora field, scroll parallax, observer-driven reveals, delegated kinetic cards, analysis reticles, sequential result settling, and an optical HUD sweep.
+- Kept the experience adaptive: high, balanced, and reduced modes cap DPR, particle density, and frame rate; reduced mode skips the GPU module and uses the persistent static canvas.
+- First review exposed a P1 blank mobile core during competing renderer mounts. Component-owned queued mounting plus a separate fallback canvas removed the race; mobile WebGL/static assertions now pass.
+- First review also exposed P2 dark top bands and translucent workspaces in captures. The obsolete root canvas color was removed, large functional containers were excluded from opacity reveals, and the capture flow now freezes only review artifacts after resetting scroll and waiting for compositor frames.
+- Final browser evidence: `artifacts/ui-review/desktop/`, `desktop-1280/`, `tablet/`, `mobile/`, and `mobile-375/`. Home, analysis, and glasses captures show the final light canvas, fully opaque workspaces, and responsive composition.
+- Automated result: 11/11 browser flows passed across five viewports with no horizontal overflow or console errors; backend result: 97 passed.
+
+final result: passed

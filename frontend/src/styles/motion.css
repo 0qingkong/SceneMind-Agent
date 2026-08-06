@@ -14,24 +14,107 @@
   50% { opacity: 1; transform: scale(1); }
 }
 
+@keyframes sm-core-arrive {
+  0% { opacity: 0; transform: scale(0.76) rotate(-5deg); }
+  62% { opacity: 1; transform: scale(1.025) rotate(0.6deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@keyframes sm-title-unmask {
+  from { opacity: 0; clip-path: inset(0 0 100% 0); transform: translate3d(0, 22px, 0); }
+  to { opacity: 1; clip-path: inset(0); transform: translate3d(0, 0, 0); }
+}
+
+@keyframes sm-nav-signal {
+  0%, 100% { opacity: 0.72; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes sm-hud-sweep {
+  0% { opacity: 0; transform: translate3d(0, -16vh, 0); }
+  15%, 72% { opacity: 0.38; }
+  100% { opacity: 0; transform: translate3d(0, 68vh, 0); }
+}
+
+@keyframes sm-data-settle {
+  from { opacity: 0; transform: translate3d(10px, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes sm-reticle-orbit {
+  from { transform: translate(-50%, -50%) rotate(0deg) scale(0.92); }
+  50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.04); }
+  to { transform: translate(-50%, -50%) rotate(360deg) scale(0.92); }
+}
+
+@keyframes sm-reticle-focus {
+  0%, 100% { opacity: 0.28; transform: translate(-50%, -50%) scale(0.82); }
+  50% { opacity: 0.78; transform: translate(-50%, -50%) scale(1.08); }
+}
+
 .route-enter-active,
 .route-leave-active { transition: opacity var(--sm-duration-base) var(--sm-ease-standard), transform var(--sm-duration-base) var(--sm-ease-standard); }
 .route-enter-from { opacity: 0; transform: translate3d(0, 8px, 0); }
 .route-leave-to { opacity: 0; transform: translate3d(0, -4px, 0); }
 
-.memory-core:not(.quality-reduced) .core-orbits i:first-child { animation: sm-core-orbit 24s linear infinite; }
-.memory-core:not(.quality-reduced) .core-orbits i:nth-child(2) { animation: sm-core-orbit-reverse 32s linear infinite; }
-.memory-core.state-analyzing .core-orbits i:nth-child(3), .memory-core.state-retrieving .core-orbits i:nth-child(3) { animation: sm-core-orbit 8s linear infinite; }
-.memory-core.state-target-found { animation: sm-pulse-once 620ms var(--sm-ease-out) both; }
+.route-enter-active .page-heading h1,
+.route-enter-active .hero-narrative h1 { animation: sm-title-unmask 760ms var(--sm-ease-out); }
+.route-enter-active .memory-core-canvas { animation: sm-core-arrive 980ms var(--sm-ease-out); }
 
-@keyframes sm-core-orbit {
-  from { transform: rotate(-14deg) scaleY(0.52); }
-  to { transform: rotate(346deg) scaleY(0.52); }
+.motion-ready.sm-reveal-target {
+  opacity: 0;
+  transform: translate3d(0, 20px, 0) scale(0.988);
+  transition:
+    opacity 680ms var(--sm-ease-out),
+    transform 780ms var(--sm-ease-out);
+  transition-delay: calc(var(--sm-reveal-order, 0) * 55ms);
+  will-change: opacity, transform;
 }
-@keyframes sm-core-orbit-reverse {
-  from { transform: rotate(24deg) scaleY(0.7); }
-  to { transform: rotate(-336deg) scaleY(0.7); }
+.motion-ready.sm-reveal-target.sm-reveal-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  will-change: auto;
 }
+
+.sm-kinetic-surface {
+  --sm-tilt-x: 0deg;
+  --sm-tilt-y: 0deg;
+  transform-style: preserve-3d;
+  transition:
+    transform 540ms var(--sm-ease-out),
+    box-shadow var(--sm-duration-base) ease !important;
+}
+.sm-kinetic-surface.sm-kinetic-active {
+  transform: perspective(1100px) rotateX(var(--sm-tilt-x)) rotateY(var(--sm-tilt-y)) translate3d(0, -4px, 14px) !important;
+  transition-duration: 110ms, var(--sm-duration-base) !important;
+  will-change: transform;
+}
+
+.result-ready .summary-card,
+.result-ready .metrics-row,
+.result-ready .analysis-meta,
+.result-ready .object-card,
+.result-ready .relation-card {
+  animation: sm-data-settle 520ms var(--sm-ease-out) both;
+}
+.result-ready .metrics-row { animation-delay: 70ms; }
+.result-ready .analysis-meta { animation-delay: 120ms; }
+.result-ready .object-card:nth-child(2),
+.result-ready .relation-card:nth-child(2) { animation-delay: 90ms; }
+.result-ready .object-card:nth-child(3),
+.result-ready .relation-card:nth-child(3) { animation-delay: 150ms; }
+
+.spatial-rail a.router-link-active svg,
+.mobile-dock a.router-link-active svg { animation: sm-nav-signal 2.8s ease-in-out infinite; }
+
+.glasses-shell .hud-stage::after {
+  animation: sm-hud-sweep 7.2s var(--sm-ease-in-out) infinite;
+}
+
+.analyzing-overlay::before { animation: sm-reticle-orbit 5.8s linear infinite; }
+.analyzing-overlay::after { animation: sm-reticle-focus 1.8s ease-in-out infinite; }
+
+.memory-core.state-target-found { animation: sm-pulse-once 620ms var(--sm-ease-out) both; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -40,4 +123,23 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+  .motion-ready.sm-reveal-target,
+  .motion-ready.sm-reveal-target.sm-reveal-visible {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+.visual-quality-reduced *,
+.visual-quality-reduced *::before,
+.visual-quality-reduced *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+.visual-quality-reduced .motion-ready.sm-reveal-target,
+.visual-quality-reduced .motion-ready.sm-reveal-target.sm-reveal-visible {
+  opacity: 1 !important;
+  transform: none !important;
 }

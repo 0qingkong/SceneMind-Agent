@@ -1,6 +1,6 @@
 # SceneMind Spatial OS UI System
 
-SceneMind uses the **Aurora Memory System** visual direction: an airy scientific interface with a blue liquid memory core, restrained motion, evidence-first layouts, and explicit system truth.
+SceneMind uses the **Aurora Memory System** visual direction: an airy scientific interface with a volumetric blue memory core, state-driven motion, evidence-first layouts, and explicit system truth.
 
 ## Visual foundation
 
@@ -15,13 +15,18 @@ SceneMind uses the **Aurora Memory System** visual direction: an airy scientific
 
 `MemoryCore` maps real UI states to `idle`, `observing`, `analyzing`, `remembering`, `retrieving`, `target-found`, `warning`, and `offline`.
 
-High and balanced modes use one Canvas 2D context. Reduced mode uses a static fallback. The canvas pauses while the document is hidden, and mounting another core disposes the previous active renderer.
+High and balanced modes lazy-load a Three.js/WebGL renderer with a custom liquid-surface shader, Fresnel edge light, additive aura, internal lattice, three-dimensional orbits, deterministic particles, pointer response, and interpolated state palettes. A separate static Canvas is always mounted underneath it, so context creation or loss can never leave an empty core. Reduced mode skips the GPU module entirely.
+
+Each route mounts at most one GPU Memory Core. High mode targets 60 FPS with 210 particles and a 1.8 DPR cap. Balanced mode targets 42 FPS with 92 particles and a 1.25 DPR cap. Rendering pauses while the document is hidden, and component-owned cleanup disposes geometries, materials, listeners, observers, and the WebGL context.
 
 ## Motion and accessibility
 
-- Motion uses CSS transitions/keyframes and a capability-detected View Transition wrapper.
+- Motion uses a coordinated stack: WebGL for the Memory Core, one Canvas ambient field, CSS transitions/keyframes, IntersectionObserver reveals, and one delegated pointer handler for kinetic surfaces.
+- The ambient field runs at 36 FPS on capable desktops and 24 FPS with fewer particles on mobile, balanced, or low-memory devices; fine pointers and scroll position add subtle spatial depth without moving content.
+- System states drive the strongest motion: analysis activates the spatial reticle, results settle in sequence, Agent retrieval energizes the core, and the glasses simulator uses a restrained optical sweep.
+- Scroll reveals and card tilt progressively enhance the interface; content remains visible when observers, fine-pointer input, or animation support are unavailable.
 - Motion never replaces loading, success, error, camera, or Agent status text.
-- `prefers-reduced-motion` forces the reduced visual mode and near-instant transitions.
+- `prefers-reduced-motion` or the manual “精简” control forces the reduced visual mode, static canvases, disabled kinetic surfaces, and near-instant transitions.
 - Keyboard focus remains visible, navigation is semantic, and mobile controls keep touch-sized targets.
 
 ## Product-truth rules
@@ -35,8 +40,9 @@ High and balanced modes use one Canvas 2D context. Reduced mode uses a static fa
 
 ## Performance budget
 
-- One active Canvas Memory Core at a time.
-- No background video or global particle layer.
-- Mobile uses balanced mode by default.
-- Long lists use simple layout without staggered spring animation.
+- One active WebGL Memory Core and one low-density ambient Canvas at a time.
+- The Three.js renderer is code-split and only requested outside reduced mode.
+- No background video or remote runtime asset is required.
+- Mobile uses balanced mode by default and receives fewer particles, a lower DPR, and a lower ambient frame rate.
+- Long lists use one-shot observer reveals rather than perpetual spring simulations.
 - No online runtime asset is required for the competition demo.

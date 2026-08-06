@@ -3,16 +3,26 @@ import { ref } from 'vue'
 
 import MobileDock from '../components/navigation/MobileDock.vue'
 import SpatialRail from '../components/navigation/SpatialRail.vue'
+import SpatialAmbientField from '../components/spatial/SpatialAmbientField.vue'
 import GlobalSystemStrip from '../components/system/GlobalSystemStrip.vue'
+import { useKineticSurfaces } from '../composables/useKineticSurfaces'
+import { useRevealMotion } from '../composables/useRevealMotion'
+import { useVisualQuality } from '../composables/useVisualQuality'
 import type { ReadinessResponse } from '../types/api'
 
 defineProps<{ readiness: ReadinessResponse | null }>()
 const railExpanded = ref(false)
+const shell = ref<HTMLElement | null>(null)
+const { quality } = useVisualQuality()
+
+useRevealMotion(shell)
+useKineticSurfaces(shell)
 </script>
 
 <template>
-  <div class="spatial-shell" :class="{ 'rail-expanded': railExpanded }">
+  <div ref="shell" class="spatial-shell" :class="[`visual-quality-${quality}`, { 'rail-expanded': railExpanded }]">
     <a class="skip-link" href="#main-content">跳到主要内容</a>
+    <SpatialAmbientField />
     <SpatialRail :expanded="railExpanded" @toggle="railExpanded = !railExpanded" />
     <div class="spatial-workspace">
       <GlobalSystemStrip :readiness="readiness" />

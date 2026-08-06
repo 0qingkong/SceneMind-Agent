@@ -197,19 +197,24 @@
   isolation: isolate; contain: layout paint style;
 }
 .memory-core.compact { width: min(100%, 340px); }
-.memory-core-hit { position: absolute; inset: 17%; z-index: 7; border-radius: 50%; background: transparent; cursor: pointer; }
-.memory-core-canvas { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; }
-.memory-core-static {
-  position: absolute; z-index: 3; width: 48%; aspect-ratio: 1; border-radius: 46% 54% 52% 48% / 48% 42% 58% 52%;
-  background: var(--sm-gradient-core); filter: drop-shadow(0 22px 34px rgba(62, 139, 255, 0.22));
+.memory-core-hit { position: absolute; inset: 21%; z-index: 7; border-radius: 50%; background: transparent; cursor: pointer; }
+.memory-core-canvas,
+.memory-core-fallback-canvas { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; }
+.memory-core-fallback-canvas { z-index: 2; opacity: 1; transition: opacity var(--sm-duration-base) ease; }
+.memory-core-fallback-canvas.is-suppressed { opacity: 0; }
+.memory-core-canvas {
+  filter: drop-shadow(0 34px 52px rgba(62, 139, 255, 0.2));
+  transition: filter var(--sm-duration-slow) ease, transform var(--sm-duration-slow) var(--sm-ease-out), opacity var(--sm-duration-base) ease;
 }
-.state-offline .memory-core-static { filter: grayscale(0.7); opacity: 0.58; }
-.state-warning .memory-core-static { filter: sepia(0.18) drop-shadow(0 22px 34px rgba(231, 162, 71, 0.18)); }
-.core-orbits { position: absolute; inset: 9%; z-index: 1; pointer-events: none; }
-.core-orbits i { position: absolute; inset: 8%; border: 1px solid rgba(62, 139, 255, 0.16); border-radius: 50%; transform: rotate(-14deg) scaleY(0.52); }
-.core-orbits i:nth-child(2) { inset: 0; border-color: rgba(129, 119, 242, 0.12); transform: rotate(24deg) scaleY(0.7); }
-.core-orbits i:nth-child(3) { inset: 18%; border-style: dashed; border-color: rgba(109, 225, 231, 0.2); transform: rotate(68deg) scaleY(0.8); }
-.core-status-label { position: absolute; right: 4%; bottom: 14%; z-index: 5; display: grid; min-width: 160px; gap: 4px; }
+.memory-core.state-analyzing .memory-core-canvas,
+.memory-core.state-retrieving .memory-core-canvas { filter: drop-shadow(0 38px 70px rgba(80, 137, 255, 0.32)); }
+.memory-core.state-warning .memory-core-canvas { filter: drop-shadow(0 34px 58px rgba(231, 162, 71, 0.22)); }
+.memory-core.state-offline .memory-core-canvas { filter: grayscale(0.48) drop-shadow(0 20px 40px rgba(76, 90, 112, 0.12)); opacity: 0.72; }
+.core-status-label {
+  position: absolute; right: 4%; bottom: 14%; z-index: 5; display: grid; min-width: 160px; padding: 9px 11px; gap: 4px;
+  border: 1px solid rgba(44, 70, 110, 0.1); border-radius: var(--sm-radius-sm);
+  background: rgba(249, 252, 255, 0.58); box-shadow: 0 12px 32px rgba(35, 56, 95, 0.07); backdrop-filter: blur(16px);
+}
 .core-status-label > span { display: flex; align-items: center; gap: 7px; color: var(--sm-ink-primary); font-size: 11px; font-weight: 650; }
 .core-status-label i { width: 7px; height: 7px; border-radius: 50%; background: var(--sm-blue-500); box-shadow: 0 0 0 5px rgba(62, 139, 255, 0.1); }
 .core-status-label small { padding-left: 14px; color: var(--sm-ink-tertiary); font-family: var(--sm-font-tech); font-size: 8px; }
@@ -218,8 +223,9 @@
 .core-status-label.state-target-found i { background: var(--sm-success); }
 .core-quality-control { position: absolute; bottom: 4%; left: 50%; z-index: 8; display: flex; align-items: center; gap: 7px; color: var(--sm-ink-tertiary); font-family: var(--sm-font-tech); font-size: 8px; transform: translateX(-50%); }
 .core-quality-control select { padding: 4px 20px 4px 7px; border: 1px solid var(--sm-line-soft); border-radius: var(--sm-radius-pill); color: var(--sm-ink-secondary); background: rgba(255, 255, 255, 0.66); font-size: 8px; }
-.memory-core.quality-reduced .core-orbits { opacity: 0.45; }
-.memory-core.interactive:hover .memory-core-static { transform: scale(1.015); }
+.memory-core.interactive:hover .memory-core-canvas { transform: scale(1.018); }
+.memory-core.interactive:active .memory-core-canvas { transform: scale(0.992); }
+.memory-core-hit:focus-visible { outline-offset: 14px; }
 
 @media (max-width: 767px) {
   .memory-core { width: min(100%, 320px); }
