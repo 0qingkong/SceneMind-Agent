@@ -46,7 +46,7 @@ onMounted(loadObservation)
 </script>
 
 <template>
-  <section>
+  <section class="memory-detail-view">
     <div class="page-heading">
       <div><p class="eyebrow">MEMORY DETAIL</p><h1>{{ observation?.title || '场景记忆详情' }}</h1></div>
       <RouterLink class="secondary-link" to="/memory">返回记忆</RouterLink>

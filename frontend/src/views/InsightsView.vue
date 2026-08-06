@@ -27,7 +27,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section>
+  <section class="insights-view">
     <div class="page-heading">
       <div><p class="eyebrow">MEMORY INSIGHTS</p><h1>空间记忆洞察</h1></div>
       <span>真实持久化数据</span>
