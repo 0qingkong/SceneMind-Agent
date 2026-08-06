@@ -6,10 +6,11 @@ const imagePath = process.env.SCENEMIND_E2E_IMAGE
 const apiBase = process.env.SCENEMIND_E2E_API_URL ?? 'http://127.0.0.1:18000/api/v1'
 const reviewRoot = process.env.SCENEMIND_UI_REVIEW_DIR ?? '../artifacts/ui-review'
 const viewports = [
-  { name: 'desktop', width: 1440, height: 900, screenshots: true },
-  { name: 'tablet', width: 1024, height: 768, screenshots: false },
+  { name: 'desktop', width: 1440, height: 1000, screenshots: true },
+  { name: 'desktop-1280', width: 1280, height: 800, screenshots: true },
+  { name: 'tablet', width: 1024, height: 768, screenshots: true },
   { name: 'mobile', width: 390, height: 844, screenshots: true },
-  { name: 'small', width: 360, height: 800, screenshots: false },
+  { name: 'mobile-375', width: 375, height: 812, screenshots: true, reducedMotion: true },
 ]
 
 test.describe.configure({ mode: 'serial' })
@@ -18,7 +19,12 @@ for (const viewport of viewports) {
   test(`UI review ${viewport.name} has no horizontal overflow`, async ({ page, request }) => {
     test.setTimeout(90_000)
     if (!imagePath) throw new Error('SCENEMIND_E2E_IMAGE is required')
+    const consoleErrors: string[] = []
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text())
+    })
     await page.setViewportSize({ width: viewport.width, height: viewport.height })
+    if ('reducedMotion' in viewport && viewport.reducedMotion) await page.emulateMedia({ reducedMotion: 'reduce' })
 
     await page.goto('/analyze')
     await page.locator('input[type=file]').setInputFiles(imagePath)
@@ -57,14 +63,22 @@ for (const viewport of viewports) {
       }
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
       expect(overflow, `${viewport.name} ${route} overflow`).toBeLessThanOrEqual(1)
+      if (route === '/' && 'reducedMotion' in viewport && viewport.reducedMotion) {
+        await expect(page.locator('.memory-core.quality-reduced')).toBeVisible()
+      }
       if (viewport.screenshots) {
         // Keep keyboard-only affordances out of the review capture while preserving
         // the skip link for real keyboard users.
+        await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }))
         await page.locator('#main-content').focus()
+        await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur())
         const directory = path.resolve(reviewRoot, viewport.name)
         await mkdir(directory, { recursive: true })
-        await page.screenshot({ path: path.join(directory, `${name}.png`), fullPage: true })
+        // Viewport captures avoid repeating fixed and sticky navigation while
+        // Playwright stitches unusually tall pages.
+        await page.screenshot({ path: path.join(directory, `${name}.png`), fullPage: false })
       }
     }
+    expect(consoleErrors, `${viewport.name} console errors`).toEqual([])
   })
 }

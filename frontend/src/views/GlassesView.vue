@@ -144,12 +144,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section>
+  <section class="glasses-view">
     <div class="page-heading">
       <div><p class="eyebrow">AI GLASSES SIMULATOR</p><h1>未来设备交互预览</h1></div>
       <span>浏览器模拟器</span>
     </div>
-    <div class="simulator-disclaimer"><strong>AI Glasses Simulator · 未来设备交互预览</strong><br />当前为浏览器端模拟，不代表已连接真实 AI 眼镜硬件。</div>
+    <div class="simulator-disclaimer"><strong>AI Glasses Simulator · 未来设备交互预览</strong><span>当前为浏览器端模拟，不代表已连接真实 AI 眼镜硬件。</span></div>
     <div class="simulator-toolbar">
       <label>输入来源
         <select v-model="input" @change="switchInput">
@@ -178,6 +178,8 @@ onBeforeUnmount(() => {
         <div v-if="input === 'live' && !recording" class="live-placeholder"><p>连接摄像头开始模拟</p></div>
         <span class="hud-rec" :class="{ active: recording }">{{ recording ? '● 模拟镜头使用中' : '已暂停' }}</span>
         <span class="hud-source">{{ input === 'live' ? '实时镜头' : input === 'observation' ? '保存观察' : '保存会话' }}</span>
+        <span class="hud-corner hud-corner-left">SCENEMIND · SIMULATION</span>
+        <span class="hud-corner hud-corner-right">{{ result ? `${result.objects.length} OBJECTS` : 'AWAITING INPUT' }}</span>
         <div v-if="eventMessage" class="hud-event">{{ targetFound ? '已找到目标 · ' : '' }}{{ eventMessage }}</div>
       </div>
       <aside class="hud-panel">

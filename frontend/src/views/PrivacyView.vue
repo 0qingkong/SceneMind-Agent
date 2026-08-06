@@ -36,7 +36,7 @@ async function downloadExport() {
 </script>
 
 <template>
-  <section>
+  <section class="privacy-view">
     <div class="page-heading">
       <div><p class="eyebrow">PRIVACY & SETTINGS</p><h1>隐私与采集偏好</h1></div>
       <span>Local preferences</span>

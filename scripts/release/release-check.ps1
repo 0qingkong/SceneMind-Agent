@@ -31,10 +31,10 @@ Add-Check "required_release_files" ($missing.Count -eq 0) $(if ($missing.Count) 
 $declared = (Read-Text "VERSION").Trim()
 $package = if (Test-Path -LiteralPath (Join-Path $projectRoot "frontend\package.json")) { Get-Content -LiteralPath (Join-Path $projectRoot "frontend\package.json") -Raw | ConvertFrom-Json } else { $null }
 $backendVersion = Read-Text "backend\app\core\version.py"
-$appShell = Read-Text "frontend\src\App.vue"
+$systemStrip = Read-Text "frontend\src\components\system\GlobalSystemStrip.vue"
 $versionOk = $declared -eq $Version -and $package -and $package.version -eq $Version -and
     $backendVersion -match ('APP_VERSION\s*=\s*"' + [regex]::Escape($Version) + '"') -and
-    $appShell -match ('v' + [regex]::Escape($Version))
+    $systemStrip -match ('v' + [regex]::Escape($Version))
 Add-Check "version_consistency" $versionOk "Expected VERSION, backend, frontend package and UI chip to equal $Version."
 
 $routes = @("/live", "/analyze", "/memory", "/agent", "/sessions", "/devices", "/glasses", "/insights", "/privacy", "/system")

@@ -197,7 +197,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section>
+  <section class="session-detail-view">
     <div class="page-heading">
       <div><p class="eyebrow">CAPTURE SESSION</p><h1>{{ session?.title || '观察会话详情' }}</h1></div>
       <span>{{ session ? (session.status === 'active' ? '运行中' : session.status === 'failed' ? '失败' : '已停止') : '加载中' }}</span>

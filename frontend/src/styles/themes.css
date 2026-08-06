@@ -1,0 +1,16 @@
+[data-theme="deep"] {
+  color-scheme: dark;
+  --sm-bg-canvas: #060911;
+  --sm-bg-soft: #0a101b;
+  --sm-bg-elevated: rgba(14, 21, 34, 0.82);
+  --sm-bg-solid: #101827;
+  --sm-bg-inverse: #f7faff;
+  --sm-ink-strong: #f5f8ff;
+  --sm-ink-primary: #dde6f7;
+  --sm-ink-secondary: #8997b2;
+  --sm-ink-tertiary: #64728d;
+  --sm-ink-inverse: #09111f;
+  --sm-line-soft: rgba(205, 224, 255, 0.08);
+  --sm-line-medium: rgba(205, 224, 255, 0.15);
+  --sm-gradient-surface: linear-gradient(145deg, rgba(16, 24, 39, 0.94), rgba(10, 16, 27, 0.82));
+}

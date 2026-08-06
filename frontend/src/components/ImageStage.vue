@@ -30,10 +30,10 @@ function boxStyle(bbox: [number, number, number, number]) {
     <img v-if="!imageFailed" :src="imageUrl" alt="待分析场景" @error="imageFailed = true" />
     <div v-else class="image-stage-fallback" role="img" aria-label="场景图片加载失败"><strong>图片证据暂不可用</strong><small>请检查后端图片存储后重试。</small></div>
     <div
-      v-for="item in imageFailed ? [] : objects"
+      v-for="(item, index) in imageFailed ? [] : objects"
       :key="item.id"
       class="bbox"
-      :style="boxStyle(item.bbox)"
+      :style="{ ...boxStyle(item.bbox), '--reveal-index': index }"
     >
       <span>{{ objectDisplayName(objectNames, item.id) }} {{ Math.round(item.confidence * 100) }}%</span>
     </div>

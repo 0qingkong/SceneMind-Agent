@@ -156,14 +156,18 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section>
+  <section class="perception-view live-view">
     <div class="page-heading">
       <div><p class="eyebrow">LIVE LENS</p><h1>实时空间镜头</h1></div>
       <span :class="{ 'camera-live-chip': cameraActive }">{{ cameraActive ? '● 摄像头使用中' : '摄像头未开启' }}</span>
     </div>
 
-    <div class="workspace-grid live-workspace">
-      <section class="workspace-panel">
+    <div class="perception-context" aria-label="镜头状态">
+      <span>DEVICE · {{ camera.device?.label || 'Browser camera' }}</span><span>SOURCE · Live Camera</span><span>{{ cameraActive ? 'STATE · Connected' : 'STATE · Permission required' }}</span>
+    </div>
+
+    <div class="workspace-grid live-workspace perception-workspace">
+      <section class="workspace-panel capture-panel">
         <aside class="permission-note"><strong>启用前说明</strong><p>浏览器会在你点击后请求摄像头权限，仅抓取你主动分析的静态画面，不请求麦克风。</p></aside>
         <div class="live-stage">
           <video v-show="!frozenUrl" ref="video" autoplay muted playsinline></video>
@@ -202,8 +206,8 @@ onBeforeUnmount(() => {
         <p v-if="saved" class="success-message">已保存 · <RouterLink :to="saved.detail_url">打开记忆证据</RouterLink></p>
       </section>
 
-      <section class="workspace-panel result-panel">
-        <h2>镜头分析</h2>
+      <section class="workspace-panel result-panel intelligence-panel" :class="{ 'result-ready': result }">
+        <div class="panel-title-row"><div><p class="eyebrow">LIVE INTERPRETATION</p><h2>镜头分析</h2></div><span>{{ result ? '场景理解完成' : busy ? '正在理解' : '等待抓拍' }}</span></div>
         <div class="find-helper">
           <input v-model="findQuery" placeholder="查找物体，例如：杯子 / cup" />
           <span v-if="findState === true" class="found-state">已找到</span>

@@ -1,23 +1,58 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import {
+  PhArrowRight,
+  PhBoundingBox,
+  PhBrain,
+  PhCamera,
+  PhEye,
+  PhMagnifyingGlass,
+  PhSparkle,
+  PhUploadSimple,
+} from '@phosphor-icons/vue'
 
-import { apiAssetUrl, listCaptureSessions, listObservations } from '../api/client'
+import { apiAssetUrl, getReadiness, listCaptureSessions, listObservations } from '../api/client'
+import MemoryCore from '../components/spatial/MemoryCore.vue'
+import MetricTile from '../components/ui/MetricTile.vue'
 import SafeImage from '../components/SafeImage.vue'
-import type { CaptureSessionSummary, ObservationSummary } from '../types/api'
+import StatusOrb from '../components/ui/StatusOrb.vue'
+import type { CaptureSessionSummary, ObservationSummary, ReadinessResponse } from '../types/api'
 
+const router = useRouter()
 const recentMemories = ref<ObservationSummary[]>([])
 const recentSessions = ref<CaptureSessionSummary[]>([])
+const readiness = ref<ReadinessResponse | null>(null)
+const memoryTotal = ref(0)
+const sessionTotal = ref(0)
 const loading = ref(true)
 const dataUnavailable = ref(false)
 
+const latestObservation = computed(() => recentMemories.value[0]?.created_at)
+const activeSessions = computed(() => recentSessions.value.filter((item) => item.status === 'active').length || readiness.value?.active_session_count || 0)
+const coreState = computed(() => dataUnavailable.value ? 'offline' : loading.value ? 'analyzing' : 'idle')
+
+function formatRelative(value?: string) {
+  if (!value) return '暂无记录'
+  const delta = Date.now() - new Date(value).getTime()
+  if (delta < 60_000) return '刚刚'
+  if (delta < 3_600_000) return `${Math.max(1, Math.floor(delta / 60_000))} 分钟前`
+  if (delta < 86_400_000) return `${Math.floor(delta / 3_600_000)} 小时前`
+  return new Intl.DateTimeFormat('zh-CN', { month: 'short', day: 'numeric' }).format(new Date(value))
+}
+
 onMounted(async () => {
   try {
-    const [memory, sessions] = await Promise.all([
+    const [memory, sessions, system] = await Promise.all([
       listObservations({ limit: 3 }),
       listCaptureSessions(),
+      getReadiness(),
     ])
     recentMemories.value = memory.items
+    memoryTotal.value = memory.total
     recentSessions.value = sessions.items.slice(0, 3)
+    sessionTotal.value = sessions.total
+    readiness.value = system
   } catch {
     dataUnavailable.value = true
   } finally {
@@ -27,49 +62,47 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="home-view">
-    <div class="hero-layout">
-      <div>
-        <p class="eyebrow">EVIDENCE-BACKED SPATIAL MEMORY</p>
-        <h1>让视觉场景<br />成为可查询的记忆</h1>
-        <p class="hero-description">
-          SceneMind 是一个面向手机摄像头与未来 AI 眼镜的空间记忆智能体，可从视觉场景中检测物体、推导二维关系、形成长期记忆，并通过自然语言查询返回时间、地点和原始图片证据。
-        </p>
+  <section class="home-view spatial-home">
+    <section class="spatial-hero">
+      <div class="hero-narrative">
+        <p class="eyebrow">SCENEMIND SPATIAL OS</p>
+        <h1>让视觉成为<br /><span>可查询的空间记忆</span></h1>
+        <p class="hero-description">观察场景、理解二维关系、形成带时间与图片的记忆，再用真实证据回答“物体最后出现在哪里”。</p>
         <div class="hero-actions">
-          <RouterLink class="primary-link" to="/live">开始实时观察</RouterLink>
-          <RouterLink class="secondary-link" to="/agent">询问空间记忆 Agent</RouterLink>
+          <RouterLink class="primary-link" to="/live"><PhCamera :size="18" weight="duotone" />开始实时观察</RouterLink>
+          <RouterLink class="secondary-link" to="/agent"><PhSparkle :size="18" weight="duotone" />询问空间记忆</RouterLink>
+        </div>
+        <div class="hero-secondary-actions">
+          <RouterLink to="/analyze"><PhUploadSimple :size="16" />上传场景</RouterLink>
+          <RouterLink to="/memory"><PhBrain :size="16" />查看记忆</RouterLink>
         </div>
       </div>
-      <aside class="hero-trust-card surface-card">
-        <span class="status-pill status-success">证据优先</span>
-        <strong>回答来自已保存观察</strong>
-        <p>每条结论都可回到时间、地点、物体框和原始场景图片。</p>
-        <div><span>当前能力</span><b>上传 · 浏览器镜头 · 本地记忆</b></div>
-        <div><span>可信边界</span><b>二维几何 · 类别检索 · 非身份识别</b></div>
-      </aside>
-    </div>
 
-    <section class="home-section">
-      <div class="section-header"><div><p class="eyebrow">PRODUCT LOOP</p><h2>四步形成空间记忆</h2></div></div>
-      <div class="capability-grid">
-        <article><span>01</span><h3>看见场景</h3><p>从上传或明确授权的浏览器镜头获得静态图像。</p></article>
-        <article><span>02</span><h3>理解关系</h3><p>检测物体，并从二维边界框推导可解释关系。</p></article>
-        <article><span>03</span><h3>形成记忆</h3><p>持久化图片、物体、关系、地点、来源和时间。</p></article>
-        <article><span>04</span><h3>证据化检索</h3><p>Agent 调用只读工具，返回答案和原始图片证据。</p></article>
+      <div class="hero-core-stage">
+        <MemoryCore :state="coreState" interactive @activate="router.push('/live')" />
       </div>
+
+      <aside class="hero-instrument" aria-label="真实系统指标">
+        <div class="instrument-header"><span>LIVE INSTRUMENTS</span><StatusOrb :status="dataUnavailable ? 'offline' : 'active'" :label="dataUnavailable ? 'offline' : 'ready'" /></div>
+        <MetricTile :value="memoryTotal" label="已保存记忆" detail="来自持久化观察" />
+        <MetricTile :value="activeSessions" label="活动会话" :detail="`共 ${sessionTotal} 个会话`" />
+        <MetricTile :value="readiness?.analyzer_mode === 'mock' ? 'Mock' : readiness?.analyzer_mode === 'yolo' ? 'YOLO' : '—'" label="当前分析器" :detail="readiness?.model_loaded ? '模型已加载' : '按需加载 / 未连接'" />
+        <MetricTile :value="formatRelative(latestObservation)" label="最近观察" detail="真实保存时间" />
+      </aside>
     </section>
 
-    <section class="home-section">
-      <div class="section-header"><div><p class="eyebrow">CAPTURE SOURCES</p><h2>多来源视觉采集</h2></div><RouterLink class="text-link" to="/devices">查看设备中心</RouterLink></div>
-      <div class="source-grid">
-        <RouterLink class="source-card surface-card" to="/analyze"><span>UPLOAD</span><strong>本地图片</strong><p>使用拥有许可的 JPG、PNG 或 WebP。</p></RouterLink>
-        <RouterLink class="source-card surface-card" to="/live"><span>CAMERA</span><strong>手机 / 电脑镜头</strong><p>用户点击后才请求权限，且不采集音频。</p></RouterLink>
-        <RouterLink class="source-card simulator-source surface-card" to="/glasses"><span>SIMULATOR</span><strong>AI Glasses Simulator</strong><p>未来设备交互预览，不代表真实硬件已连接。</p></RouterLink>
+    <section class="home-section process-board">
+      <div class="section-header"><div><p class="eyebrow">SPATIAL MEMORY LOOP</p><h2>从视觉到证据，只需四步</h2></div><RouterLink class="text-link" to="/analyze">进入分析工作台 <PhArrowRight :size="15" /></RouterLink></div>
+      <div class="capability-grid">
+        <article><span>01</span><PhEye :size="25" weight="duotone" /><h3>看见场景</h3><p>从上传图片或明确授权的浏览器镜头获取静态帧。</p></article>
+        <article><span>02</span><PhBoundingBox :size="25" weight="duotone" /><h3>理解关系</h3><p>检测物体，并以二维边界框规则推导可解释关系。</p></article>
+        <article><span>03</span><PhBrain :size="25" weight="duotone" /><h3>形成记忆</h3><p>保存图片、物体、地点、来源、关系和时间证据。</p></article>
+        <article><span>04</span><PhMagnifyingGlass :size="25" weight="duotone" /><h3>证据检索</h3><p>Agent 调用只读工具，回答并引用原始观察记录。</p></article>
       </div>
     </section>
 
     <section class="home-section home-data-section">
-      <div class="section-header"><div><p class="eyebrow">RECENT EVIDENCE</p><h2>最近空间记忆</h2></div><RouterLink class="text-link" to="/memory">查看全部</RouterLink></div>
+      <div class="section-header"><div><p class="eyebrow">RECENT EVIDENCE</p><h2>最近空间记忆</h2></div><RouterLink class="text-link" to="/memory">查看全部 <PhArrowRight :size="15" /></RouterLink></div>
       <p v-if="loading" class="memory-status">正在读取最近记忆…</p>
       <div v-else-if="recentMemories.length" class="home-memory-grid">
         <RouterLink v-for="item in recentMemories" :key="item.id" class="home-memory-card surface-card" :to="item.detail_url">
@@ -80,33 +113,28 @@ onMounted(async () => {
       <div v-else class="home-empty surface-card"><strong>{{ dataUnavailable ? '后端暂不可用' : '还没有保存的记忆' }}</strong><p>{{ dataUnavailable ? '启动后端后可查看真实持久化数据。' : '从实时镜头或场景分析保存第一条证据。' }}</p><RouterLink class="text-link" to="/analyze">开始场景分析</RouterLink></div>
     </section>
 
-    <section class="home-section home-data-section">
-      <div class="section-header"><div><p class="eyebrow">SEQUENTIAL OBSERVATION</p><h2>最近观察会话</h2></div><RouterLink class="text-link" to="/sessions">管理会话</RouterLink></div>
-      <div v-if="recentSessions.length" class="home-session-list surface-card">
-        <RouterLink v-for="item in recentSessions" :key="item.id" :to="`/sessions/${item.id}`">
-          <span class="session-status" :class="item.status">{{ item.status === 'active' ? '运行中' : item.status === 'failed' ? '失败' : '已停止' }}</span>
-          <strong>{{ item.title || '未命名观察会话' }}</strong>
-          <small>{{ item.analyzed_frames }} 分析 · {{ item.saved_observations }} 保存</small>
-        </RouterLink>
+    <section class="home-section source-and-proof">
+      <div class="source-ports">
+        <div class="section-header"><div><p class="eyebrow">CAPTURE PORTS</p><h2>视觉入口</h2></div></div>
+        <RouterLink class="source-card surface-card" to="/analyze"><PhUploadSimple :size="22" weight="duotone" /><span>UPLOAD</span><strong>许可图片</strong><p>JPG、PNG、WebP 本地分析。</p></RouterLink>
+        <RouterLink class="source-card surface-card" to="/live"><PhCamera :size="22" weight="duotone" /><span>CAMERA</span><strong>浏览器镜头</strong><p>点击后请求权限，不采集音频。</p></RouterLink>
       </div>
-      <div v-else-if="!loading" class="home-empty surface-card"><strong>还没有观察会话</strong><p>低频顺序采样只保存有意义的变化，不是逐帧视频推理。</p></div>
-    </section>
-
-    <section class="home-section evaluation-summary surface-card">
-      <div class="section-header"><div><p class="eyebrow">DAY 15 EVIDENCE</p><h2>真实评测摘要</h2></div><RouterLink class="text-link" to="/system">系统状态</RouterLink></div>
-      <div class="evaluation-metrics">
-        <article><strong>10 / 10</strong><span>Memory 精确匹配</span><small>确定性查询集</small></article>
-        <article><strong>17 / 18</strong><span>Agent 意图与证据</span><small>94.44%</small></article>
-        <article><strong>11 / 12</strong><span>关系人工评审</span><small>91.67% overall precision</small></article>
-        <article><strong>6 / 6</strong><span>会话保存决策</span><small>确定性帧序列</small></article>
+      <div class="evaluation-summary surface-card">
+        <div class="section-header"><div><p class="eyebrow">DAY 15 EVIDENCE</p><h2>小规模真实评测</h2></div><RouterLink class="text-link" to="/system">系统状态</RouterLink></div>
+        <div class="evaluation-metrics">
+          <article><strong>10 / 10</strong><span>Memory 精确匹配</span><small>确定性查询集</small></article>
+          <article><strong>17 / 18</strong><span>Agent 意图与证据</span><small>94.44%</small></article>
+          <article><strong>11 / 12</strong><span>关系人工评审</span><small>91.67% overall precision</small></article>
+          <article><strong>6 / 6</strong><span>会话保存决策</span><small>确定性帧序列</small></article>
+        </div>
+        <p class="boundary-note">以上为小规模 Mock/确定性评测，不代表真实 YOLO 模型准确率。真实 YOLO、手机和眼镜硬件评测仍为未运行。</p>
       </div>
-      <p class="boundary-note">以上为小规模 Mock/确定性评测，不代表真实 YOLO 模型准确率。真实 YOLO、手机和眼镜硬件评测仍为未运行。</p>
     </section>
 
     <section class="home-section privacy-boundary surface-card">
-      <div><p class="eyebrow">PRIVACY & LIMITS</p><h2>只陈述已实现能力</h2></div>
-      <ul><li>摄像头仅在用户明确点击后启用，不采集麦克风。</li><li>空间关系来自二维边界框，不代表真实深度或厘米距离。</li><li>类别历史不等于确认是同一个现实物体，也不做人脸识别。</li><li>AI Glasses Simulator 是浏览器模拟，不是商业眼镜硬件接入。</li></ul>
-      <RouterLink class="secondary-link" to="/privacy">查看隐私与可信边界</RouterLink>
+      <div><p class="eyebrow">TRUST BOUNDARIES</p><h2>能力边界始终可见</h2></div>
+      <ul><li>二维空间关系不代表真实深度或厘米距离。</li><li>同类别历史不保证是同一个现实物体。</li><li>AI Glasses Simulator 是交互预览，不是真实硬件。</li><li>Mock / Profile C 始终明确标记。</li></ul>
+      <RouterLink class="secondary-link" to="/privacy">隐私与可信边界</RouterLink>
     </section>
   </section>
 </template>

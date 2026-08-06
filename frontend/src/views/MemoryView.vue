@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import axios from 'axios'
+import { PhGridFour, PhRows } from '@phosphor-icons/vue'
 
 import { getHistory, getLastSeen, listObservations } from '../api/client'
 import MemoryMatchCard from '../components/MemoryMatchCard.vue'
 import ObservationCard from '../components/ObservationCard.vue'
+import MemoryCore from '../components/spatial/MemoryCore.vue'
 import type { MemoryMatch, ObservationSummary } from '../types/api'
 
 const observations = ref<ObservationSummary[]>([])
@@ -21,6 +23,7 @@ const sourceFilter = ref('')
 const sessionFilter = ref('')
 const timeFilter = ref<'all' | '7' | '30'>('all')
 const pageSize = 100
+const viewMode = ref<'grid' | 'timeline'>('grid')
 
 const locations = computed(() => [...new Set(observations.value.map((item) => item.location).filter(Boolean) as string[])].sort())
 const sources = computed(() => [...new Set(observations.value.map((item) => item.source_type).filter(Boolean) as string[])].sort())
@@ -103,8 +106,8 @@ onMounted(loadObservations)
 </script>
 
 <template>
-  <section>
-    <div class="page-heading"><div><p class="eyebrow">SPATIAL MEMORY</p><h1>空间记忆</h1></div><span>{{ activeQuery ? historyTotal : observationTotal }} 条记忆</span></div>
+  <section class="memory-view">
+    <div class="page-heading"><div><p class="eyebrow">SPATIAL MEMORY</p><h1>空间记忆</h1></div><div class="memory-heading-tools"><span>{{ activeQuery ? historyTotal : observationTotal }} 条记忆</span><div class="view-toggle" aria-label="记忆视图"><button :class="{ active: viewMode === 'grid' }" aria-label="网格视图" @click="viewMode = 'grid'"><PhGridFour :size="17" /></button><button :class="{ active: viewMode === 'timeline' }" aria-label="时间线视图" @click="viewMode = 'timeline'"><PhRows :size="17" /></button></div></div></div>
     <form class="memory-search" role="search" @submit.prevent="searchMemory(true)">
       <label class="sr-only" for="memory-query">按物体类别搜索记忆</label>
       <input id="memory-query" v-model="searchInput" placeholder="搜索杯子、电脑、背包……" />
@@ -134,9 +137,9 @@ onMounted(loadObservations)
 
     <template v-else>
       <p v-if="loading && !observations.length" class="memory-status">正在读取场景记忆…</p>
-      <div v-else-if="!observations.length && !errorMessage" class="memory-empty"><strong class="memory-logo">S</strong><h2>让每一次观测成为可检索的记忆</h2><p>还没有保存的场景。完成一次“分析并记忆”后，物体、关系、时间和图片会出现在这里。</p><RouterLink class="primary-link" to="/analyze">开始场景分析</RouterLink></div>
+      <div v-else-if="!observations.length && !errorMessage" class="memory-empty memory-core-empty"><MemoryCore state="idle" compact /><h2>让每一次观测成为可检索的记忆</h2><p>还没有保存的场景。完成一次“分析并记忆”后，物体、关系、时间和图片会出现在这里。</p><RouterLink class="primary-link" to="/analyze">开始场景分析</RouterLink></div>
       <div v-else-if="!visibleObservations.length" class="memory-empty compact-empty"><h2>没有符合筛选条件的记忆</h2><p>清空筛选后可以查看已加载的最近 {{ observations.length }} 条记录。</p><button class="secondary-button" @click="clearFilters">清空筛选</button></div>
-      <div v-else class="observation-timeline"><ObservationCard v-for="item in visibleObservations" :key="item.id" :observation="item" /><p v-if="observationTotal > observations.length" class="search-guidance">当前筛选覆盖最近 {{ observations.length }} 条记录，共 {{ observationTotal }} 条。</p></div>
+      <div v-else class="observation-collection" :class="`view-${viewMode}`"><ObservationCard v-for="item in visibleObservations" :key="item.id" :observation="item" /><p v-if="observationTotal > observations.length" class="search-guidance">当前筛选覆盖最近 {{ observations.length }} 条记录，共 {{ observationTotal }} 条。</p></div>
     </template>
   </section>
 </template>

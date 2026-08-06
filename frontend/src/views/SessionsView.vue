@@ -53,7 +53,7 @@ onMounted(load)
 </script>
 
 <template>
-  <section>
+  <section class="sessions-view">
     <div class="page-heading">
       <div><p class="eyebrow">CONTINUOUS CAPTURE</p><h1>观察会话</h1></div>
       <span>{{ sessions.length }} 个会话</span>
