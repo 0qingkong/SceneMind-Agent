@@ -86,14 +86,18 @@ onBeforeUnmount(clearPreview)
 </script>
 
 <template>
-  <section>
+  <section class="perception-view analyze-view">
     <div class="page-heading">
       <div><p class="eyebrow">SCENE ANALYSIS</p><h1>场景分析工作台</h1></div>
       <span>检测 · 推理 · 记忆</span>
     </div>
 
-    <div class="workspace-grid">
-      <section class="workspace-panel">
+    <div class="perception-context" aria-label="分析状态">
+      <span>INPUT · Local image</span><span>{{ result ? `ENGINE · ${result.engine}` : 'ENGINE · Awaiting analysis' }}</span><span>{{ isAnalyzing ? 'STATE · Understanding' : result ? 'STATE · Complete' : 'STATE · Ready' }}</span>
+    </div>
+
+    <div class="workspace-grid perception-workspace">
+      <section class="workspace-panel capture-panel">
         <h2>上传并建立场景记忆</h2>
         <p class="panel-description">图片只会在你点击分析后发送至后端。请使用拥有许可的场景图片。</p>
         <label v-if="!previewUrl" class="upload-dropzone">
@@ -125,8 +129,8 @@ onBeforeUnmount(clearPreview)
         </p>
       </section>
 
-      <section class="workspace-panel result-panel">
-        <h2>结构化分析结果</h2>
+      <section class="workspace-panel result-panel intelligence-panel" :class="{ 'result-ready': result }">
+        <div class="panel-title-row"><div><p class="eyebrow">SPATIAL INTERPRETATION</p><h2>结构化分析结果</h2></div><span>{{ result ? '场景理解完成' : isAnalyzing ? '正在理解' : '等待输入' }}</span></div>
 
         <template v-if="result">
           <div class="summary-card">{{ result.scene_summary }}</div>
