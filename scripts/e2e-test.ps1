@@ -79,7 +79,7 @@ try {
         Push-Location (Join-Path $projectRoot "frontend")
         try {
             & $npm run test:e2e
-            Add-E2eResult "browser_e2e" ($LASTEXITCODE -eq 0) "six core flows plus four responsive UI reviews"
+            Add-E2eResult "browser_e2e" ($LASTEXITCODE -eq 0) "six core flows plus five responsive UI reviews"
         } finally { Pop-Location }
     }
 } finally {

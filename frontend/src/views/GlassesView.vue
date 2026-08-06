@@ -149,7 +149,7 @@ onBeforeUnmount(() => {
       <div><p class="eyebrow">AI GLASSES SIMULATOR</p><h1>未来设备交互预览</h1></div>
       <span>浏览器模拟器</span>
     </div>
-    <div class="simulator-disclaimer"><strong>AI Glasses Simulator · 未来设备交互预览</strong><span>当前未连接真实 AI 眼镜硬件</span></div>
+    <div class="simulator-disclaimer"><strong>AI Glasses Simulator · 未来设备交互预览</strong><span>当前为浏览器端模拟，不代表已连接真实 AI 眼镜硬件。</span></div>
     <div class="simulator-toolbar">
       <label>输入来源
         <select v-model="input" @change="switchInput">

@@ -1,12 +1,20 @@
 # SceneMind Agent — Project State
 
-Last updated: 2026-08-03
+Last updated: 2026-08-06
 
 ## Deadline
 
 Competition submission deadline: 2026-08-08.
 
 ## Completed
+
+### Spatial OS UI redesign
+
+- Aurora Light design tokens, responsive spatial rail/mobile dock and truthful global system strip
+- Three-quality dynamic Memory Core with Canvas 2D, static reduced-motion fallback and page-visibility pause
+- Exhibition-style Home, 70/30 Live/Analyze workspaces and progressive real-result reveal
+- Grid/timeline Memory, evidence-first Agent, restrained AI Glasses Simulator and unified operational surfaces
+- Five-viewport visual matrix covering 1440x900, 1280x800, 1024x768, 390x844 and 375x812
 
 ### Day 19-20 - Final demo and release candidate
 

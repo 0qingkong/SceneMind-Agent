@@ -82,7 +82,7 @@ async function ask(value?: string) {
         <div v-else-if="result" class="memory-empty compact-empty agent-empty" :class="{ 'unsupported-empty': unsupported }"><h2>{{ unsupported ? '这个问题超出当前支持范围' : '没有找到匹配的场景证据' }}</h2><p>{{ unsupported ? 'SceneMind 不会把开放领域知识或物理距离伪装成空间记忆答案。' : 'Agent 不会在记忆为空时猜测答案。请先保存场景，或换一个检测类别。' }}</p></div>
         <div v-else class="agent-core-empty"><MemoryCore :state="loading ? 'retrieving' : 'idle'" compact /><p>提出问题后，真实工具调用与场景证据会在这里展开。</p></div>
 
-        <details v-if="result" class="tool-trace" open>
+        <details v-if="result" class="tool-trace">
           <summary>工具执行轨迹 · {{ intentLabels[result.intent] }}</summary>
           <article v-for="(step, index) in result.tool_steps" :key="`${step.tool}-${index}`"><i aria-hidden="true"></i><strong>{{ toolLabels[step.tool] || step.tool }}</strong><span>{{ step.status === 'success' ? '成功' : step.status === 'no_match' ? '无匹配' : '已跳过' }} · {{ step.result_count }} 条</span><code>{{ JSON.stringify(step.arguments) }}</code></article>
         </details>

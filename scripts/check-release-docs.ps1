@@ -92,7 +92,7 @@ Add-Result "no_embedded_secrets" ($secretMatches.Count -eq 0) $(if ($secretMatch
 
 $package = Get-Content -Raw -LiteralPath (Join-Path $repoRoot "frontend/package.json") | ConvertFrom-Json
 $backendVersionText = Read-RepoFile "backend/app/core/version.py"
-$appShellText = Read-RepoFile "frontend/src/App.vue"
+$systemStripText = Read-RepoFile "frontend/src/components/system/GlobalSystemStrip.vue"
 $managedStartText = Read-RepoFile "scripts/start-backend.ps1"
 $expectedVersion = "0.9.0-rc1"
 $expectedBuild = "day19-20-release-candidate"
@@ -100,7 +100,7 @@ $versionOk = $package.version -eq $expectedVersion -and
     $backendVersionText -match ('APP_VERSION\s*=\s*"' + [regex]::Escape($expectedVersion) + '"') -and
     $backendVersionText -match ('APP_BUILD\s*=\s*"' + [regex]::Escape($expectedBuild) + '"') -and
     $managedStartText -match ('APP_BUILD\s*=\s*"' + [regex]::Escape($expectedBuild) + '"') -and
-    $appShellText -match ('v' + [regex]::Escape($expectedVersion))
+    $systemStripText -match ('v' + [regex]::Escape($expectedVersion))
 Add-Result "version_consistency" $versionOk "Expected version $expectedVersion and build $expectedBuild"
 
 $profileDocs = @("README.md", "docs/DEPLOYMENT.md", "docs/DEMO_RUNBOOK.md", "docs/competition/DEMO_SCRIPT.md", "docs/demo/FINAL_DEMO_SCRIPT.md", "docs/release/OFFLINE_DELIVERY_GUIDE.md")

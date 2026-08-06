@@ -1,3 +1,25 @@
+/* Final cascade guard.
+   The legacy stylesheet remains in the bundle for unchanged feature surfaces, so
+   the Spatial OS layer owns the document canvas explicitly at the end of the
+   cascade. */
+html,
+body,
+#app {
+  min-height: 100%;
+  color: var(--sm-ink-primary);
+  background: var(--sm-bg-canvas);
+}
+body {
+  background:
+    radial-gradient(circle at 74% -18%, rgba(100, 199, 255, 0.2), transparent 34rem),
+    radial-gradient(circle at 102% 42%, rgba(165, 154, 255, 0.12), transparent 30rem),
+    var(--sm-bg-canvas);
+}
+.spatial-shell,
+.spatial-workspace { background: transparent; }
+.skip-link { transform: translateY(-180%); }
+.skip-link:focus-visible { transform: translateY(0); }
+
 /* Home and spatial perception */
 .spatial-home { padding-top: 0; }
 .spatial-hero {
