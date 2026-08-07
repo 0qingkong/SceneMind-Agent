@@ -111,6 +111,14 @@ Competition submission deadline: 2026-08-08.
 
 ## Current milestone
 
+### Spatial OS motion polish
+
+- Replaced the flat Canvas blob with a lazy-loaded WebGL liquid Memory Core whose geometry, palette, particles, and tempo interpolate across real UI states.
+- Added a persistent static Canvas fallback for reduced motion, GPU startup failure, and WebGL context loss.
+- Added an adaptive aurora field, pointer-responsive particles, viewport reveals, delegated kinetic surfaces, analysis reticle motion, and an optical glasses-HUD sweep.
+- Preserved mobile and low-memory budgets through automatic balanced mode, 24/42/60 FPS tiers, DPR caps, page-visibility suspension, and complete renderer cleanup.
+- No API contract, product claim, feature scope, evidence model, or hardware boundary changed.
+
 ### Day 19-20 — Competition release candidate
 
 - Automated preparation targets `0.9.0-rc1` and Profile C as the deterministic offline/emergency flow.

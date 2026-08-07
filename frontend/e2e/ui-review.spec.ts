@@ -67,16 +67,42 @@ for (const viewport of viewports) {
         await expect(page.locator('.memory-core.quality-reduced')).toBeVisible()
       }
       if (viewport.screenshots) {
-        // Keep keyboard-only affordances out of the review capture while preserving
-        // the skip link for real keyboard users.
-        await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }))
-        await page.locator('#main-content').focus()
-        await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur())
+        if (route === '/') await expect(page.locator('.memory-core-canvas')).toHaveAttribute('data-renderer', /webgl|static/)
+        // Capture the settled visual state. The reveal choreography is exercised in
+        // the live product; freezing only the screenshot avoids translucent
+        // intermediate frames and smooth-focus scroll offsets in review artifacts.
+        await page.addStyleTag({ content: `
+          html, body {
+            scroll-behavior: auto !important;
+            overflow-anchor: none !important;
+          }
+          .route-enter-active, .route-leave-active,
+          .motion-ready.sm-reveal-target,
+          .motion-ready.sm-reveal-target.sm-reveal-visible {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+        ` })
+        const captureState = await page.evaluate(async () => {
+          ;(document.activeElement as HTMLElement | null)?.blur()
+          for (let frame = 0; frame < 4; frame += 1) {
+            if (document.scrollingElement) document.scrollingElement.scrollTop = 0
+            window.scrollTo(0, 0)
+            await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+          }
+          return {
+            shellTop: document.querySelector('.spatial-shell')?.getBoundingClientRect().top ?? Number.NaN,
+            scrollY: window.scrollY,
+          }
+        })
+        expect(captureState.shellTop, `${viewport.name} ${route} shell top`).toBeCloseTo(0, 1)
+        expect(captureState.scrollY, `${viewport.name} ${route} scroll position`).toBe(0)
         const directory = path.resolve(reviewRoot, viewport.name)
         await mkdir(directory, { recursive: true })
         // Viewport captures avoid repeating fixed and sticky navigation while
         // Playwright stitches unusually tall pages.
-        await page.screenshot({ path: path.join(directory, `${name}.png`), fullPage: false })
+        await page.screenshot({ path: path.join(directory, `${name}.png`), fullPage: false, animations: 'disabled' })
       }
     }
     expect(consoleErrors, `${viewport.name} console errors`).toEqual([])
